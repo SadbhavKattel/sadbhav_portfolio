@@ -47,14 +47,4 @@ export const projects: Project[] = [
     githubUrl: 'https://github.com/SadbhavKattel/sortify',
     image: 'https://opengraph.githubassets.com/1/SadbhavKattel/sortify',
   },
-  {
-    number: '05',
-    category: 'Machine Learning',
-    name: 'Mine Detection',
-    description:
-      'A sonar-based machine learning model that classifies sonar returns to distinguish mines from rocks on the seafloor.',
-    tags: ['Python', 'Scikit-learn', 'Jupyter'],
-    githubUrl: 'https://github.com/SadbhavKattel/Mine-detection-',
-    image: 'https://opengraph.githubassets.com/1/SadbhavKattel/Mine-detection-',
-  },
 ];
