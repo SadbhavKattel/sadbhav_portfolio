@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { RotateCcw, TrendingDown, TrendingUp } from 'lucide-react';
+import { RotateCcw, Shuffle, TrendingDown, TrendingUp } from 'lucide-react';
 
 const CONTROL_COUNT = 6;
 const CONTROL_XS = Array.from(
@@ -41,22 +41,10 @@ function lerpColor(hexA: string, hexB: string, t: number): string {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
-// The "real" pattern the dots are sampled from — a single gentle hill.
-// Kept deliberately simple (no un-fittable high-frequency component) so a
-// careful drag can actually reach a clean, low-error fit — the noise lives
-// only in the scattered dots, not in the underlying shape.
-function trueFn(t: number): number {
-  return 0.2 + 0.55 * Math.sin(Math.PI * t);
-}
-
 const DATA_TS = [0.04, 0.14, 0.24, 0.36, 0.48, 0.58, 0.7, 0.8, 0.9, 0.98];
 const DATA_NOISE = [
   0.03, -0.025, 0.04, -0.035, 0.02, -0.045, 0.03, -0.02, 0.035, -0.03,
 ];
-const DATA_POINTS = DATA_TS.map((t, i) => ({
-  x: t,
-  y: clamp01(trueFn(t) + DATA_NOISE[i]),
-}));
 
 // Uniform Catmull-Rom spline through the control heights, evaluated at any
 // x-fraction — used both to draw the curve and to score it against trueFn.
@@ -82,9 +70,9 @@ function sampleCurve(ys: number[], xFrac: number): number {
   );
 }
 
-// Mean squared error between the drawn curve and the true generating
+// Mean squared error between the drawn curve and a theme's true generating
 // function — the single source of truth for "is this a good fit."
-function mseAgainstTrue(ys: number[]): number {
+function mseAgainstTrue(ys: number[], trueFn: (t: number) => number): number {
   let sumSq = 0;
   for (const s of SAMPLE_XS) {
     const d = sampleCurve(ys, s) - trueFn(s);
@@ -94,28 +82,26 @@ function mseAgainstTrue(ys: number[]): number {
 }
 
 const FLAT_YS = CONTROL_XS.map(() => 0.5);
-const FLAT_MSE = mseAgainstTrue(FLAT_YS);
-
-const FIRE_GRADIENT =
-  'linear-gradient(180deg, #241010 0%, #7a1f1f 40%, #d9622b 75%, #f3b13a 100%)';
-const FOREST_GRADIENT =
-  'linear-gradient(180deg, #dff3e6 0%, #7fc79a 35%, #2f7a52 70%, #12483d 100%)';
 const BAD_COLOR = '#c23b2b';
 const GOOD_COLOR = '#1f7a4d';
 
-const DECOR_SLOTS = [
-  { size: 30, hue: -8, delay: 0 },
-  { size: 42, hue: 4, delay: 0.3 },
-  { size: 36, hue: -4, delay: 0.15 },
-  { size: 42, hue: 6, delay: 0.45 },
-  { size: 32, hue: -6, delay: 0.6 },
-];
+type DecorProps = { size: number; hue: number; style?: CSSProperties };
+type FloatProps = {
+  top: string;
+  duration: number;
+  delay: number;
+  opacity: number;
+};
 
-const BIRDS = [
-  { top: '18%', duration: 13, delay: -2 },
-  { top: '30%', duration: 17, delay: -8 },
-  { top: '10%', duration: 15, delay: -5 },
-];
+interface Theme {
+  id: string;
+  trueFn: (t: number) => number;
+  badGradient: string;
+  goodGradient: string;
+  BadDecor: (props: DecorProps) => JSX.Element;
+  GoodDecor: (props: DecorProps) => JSX.Element;
+  Floater: (props: FloatProps) => JSX.Element;
+}
 
 function TreeShape({ scorched }: { scorched: boolean }) {
   return (
@@ -134,37 +120,17 @@ function TreeShape({ scorched }: { scorched: boolean }) {
   );
 }
 
-function Tree({ size, style }: { size: number; style?: CSSProperties }) {
+function Tree({ size, style }: DecorProps) {
   return (
-    <svg
-      width={size}
-      height={size * 1.4}
-      viewBox="0 0 40 56"
-      className="tree-sway"
-      style={style}
-    >
+    <svg width={size} height={size * 1.4} viewBox="0 0 40 56" className="tree-sway" style={style}>
       <TreeShape scorched={false} />
     </svg>
   );
 }
 
-function BurningTree({
-  size,
-  hue,
-  style,
-}: {
-  size: number;
-  hue: number;
-  style?: CSSProperties;
-}) {
+function BurningTree({ size, hue, style }: DecorProps) {
   return (
-    <svg
-      width={size}
-      height={size * 1.4}
-      viewBox="0 0 40 56"
-      className="tree-burning"
-      style={style}
-    >
+    <svg width={size} height={size * 1.4} viewBox="0 0 40 56" className="tree-burning" style={style}>
       <TreeShape scorched />
       <g className="flame" style={{ transformOrigin: '20px 24px' }}>
         <path
@@ -172,10 +138,7 @@ function BurningTree({
           fill={`hsl(${22 + hue}, 92%, 54%)`}
         />
       </g>
-      <g
-        className="flame"
-        style={{ transformOrigin: '14px 30px', animationDelay: '0.3s' }}
-      >
+      <g className="flame" style={{ transformOrigin: '14px 30px', animationDelay: '0.3s' }}>
         <path
           d="M13 20C10 24 9 27 11 30C12 32 14 33 15 34C14 32 15 31 14 29C17 32 16 34 14 36C18 34 18 30 16 27C15 29 14 28 14 26C15 24 15 22 13 20Z"
           fill={`hsl(${45 + hue}, 95%, 60%)`}
@@ -185,37 +148,146 @@ function BurningTree({
   );
 }
 
-function Bird({
-  top,
-  duration,
-  delay,
-  opacity,
-}: {
-  top: string;
-  duration: number;
-  delay: number;
-  opacity: number;
-}) {
+function Bird({ top, duration, delay, opacity }: FloatProps) {
   return (
     <div
-      className="bird-fly"
-      style={{
-        top,
-        animationDuration: `${duration}s`,
-        animationDelay: `${delay}s`,
-        opacity,
-        transition: 'opacity 600ms ease',
-      }}
+      className="float-fly"
+      style={{ top, animationDuration: `${duration}s`, animationDelay: `${delay}s`, opacity, transition: 'opacity 600ms ease' }}
     >
-      <svg width="26" height="16" viewBox="0 0 26 16" className="bird-bob">
-        <path
-          d="M1 8C5 2 9 2 13 7C17 2 21 2 25 8C21 6 18 7 13 11C8 7 5 6 1 8Z"
-          fill="#1B1B18"
-        />
+      <svg width="26" height="16" viewBox="0 0 26 16" className="float-bob">
+        <path d="M1 8C5 2 9 2 13 7C17 2 21 2 25 8C21 6 18 7 13 11C8 7 5 6 1 8Z" fill="#1B1B18" />
       </svg>
     </div>
   );
 }
+
+function FreshFruit({ size, hue, style }: DecorProps) {
+  return (
+    <svg width={size} height={size * 1.15} viewBox="0 0 40 46" className="tree-sway" style={style}>
+      <path d="M20 8C20 3 24 1 27 3" stroke="#5c3a1f" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M20 6C24 2 30 3 29 9C26 8 22 9 20 6Z" fill="#2f7a52" />
+      <circle cx="20" cy="27" r="16" fill={`hsl(${4 + hue}, 72%, 50%)`} />
+      <path d="M10 22a11 9 0 0 1 9-7" stroke="#fff" strokeOpacity="0.4" strokeWidth="3" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RottenFruit({ size, hue, style }: DecorProps) {
+  return (
+    <svg width={size} height={size * 1.15} viewBox="0 0 40 46" className="tree-burning" style={style}>
+      <path d="M20 8C19 4 17 3 16 5" stroke="#4a3a26" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M20 7C17 4 13 5 14 10C17 9 19 9 20 7Z" fill="#4a4025" />
+      <ellipse cx="20" cy="29" rx="16" ry="14" fill={`hsl(${28 + hue}, 30%, 28%)`} />
+      <circle cx="14" cy="26" r="2.2" fill="#221a10" opacity="0.7" />
+      <circle cx="25" cy="32" r="1.8" fill="#221a10" opacity="0.7" />
+      <circle cx="22" cy="22" r="1.4" fill="#221a10" opacity="0.6" />
+    </svg>
+  );
+}
+
+function Sparkle({ top, duration, delay, opacity }: FloatProps) {
+  return (
+    <div
+      className="float-fly"
+      style={{ top, animationDuration: `${duration}s`, animationDelay: `${delay}s`, opacity, transition: 'opacity 600ms ease' }}
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" className="float-bob">
+        <path d="M9 0L10.5 7.5L18 9L10.5 10.5L9 18L7.5 10.5L0 9L7.5 7.5Z" fill="#fff3c2" />
+      </svg>
+    </div>
+  );
+}
+
+function BabySleeping({ size, style }: DecorProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" className="tree-sway" style={style}>
+      <circle cx="20" cy="20" r="18" fill="#ffe7d6" stroke="#1B1B18" strokeWidth="2" />
+      <path d="M10 18 Q13 20 16 18" stroke="#1B1B18" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M24 18 Q27 20 30 18" stroke="#1B1B18" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M16 27 Q20 30 24 27" stroke="#1B1B18" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="10" cy="24" r="2" fill="#e8a5a5" opacity="0.6" />
+      <circle cx="30" cy="24" r="2" fill="#e8a5a5" opacity="0.6" />
+    </svg>
+  );
+}
+
+function BabyCrying({ size, style }: DecorProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" className="tree-burning" style={style}>
+      <circle cx="20" cy="20" r="18" fill="#ffd9c2" stroke="#1B1B18" strokeWidth="2" />
+      <path d="M10 14 Q13 10 16 14" stroke="#1B1B18" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M24 14 Q27 10 30 14" stroke="#1B1B18" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <ellipse cx="20" cy="27" rx="6" ry="7" fill="#7a1f2b" />
+      <path d="M12 18 q-2 4 -1 7" stroke="#4aa8d8" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M28 18 q2 4 1 7" stroke="#4aa8d8" strokeWidth="2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FloatingZ({ top, duration, delay, opacity }: FloatProps) {
+  return (
+    <div
+      className="float-fly"
+      style={{ top, animationDuration: `${duration}s`, animationDelay: `${delay}s`, opacity, transition: 'opacity 600ms ease' }}
+    >
+      <span className="float-bob" style={{ display: 'block', fontWeight: 900, color: '#eef1ff', fontSize: 16 }}>
+        Z
+      </span>
+    </div>
+  );
+}
+
+const THEMES: Theme[] = [
+  {
+    id: 'forest',
+    trueFn: (t) => 0.2 + 0.55 * Math.sin(Math.PI * t),
+    badGradient: 'linear-gradient(180deg, #241010 0%, #7a1f1f 40%, #d9622b 75%, #f3b13a 100%)',
+    goodGradient: 'linear-gradient(180deg, #dff3e6 0%, #7fc79a 35%, #2f7a52 70%, #12483d 100%)',
+    BadDecor: BurningTree,
+    GoodDecor: Tree,
+    Floater: Bird,
+  },
+  {
+    id: 'fruit',
+    trueFn: (t) => 0.75 - 0.5 * Math.sin(Math.PI * t),
+    badGradient: 'linear-gradient(180deg, #241f14 0%, #4a3f1f 40%, #6b5a26 75%, #8a7a3a 100%)',
+    goodGradient: 'linear-gradient(180deg, #fff3d6 0%, #ffd166 35%, #f4a72c 70%, #e8871b 100%)',
+    BadDecor: RottenFruit,
+    GoodDecor: FreshFruit,
+    Floater: Sparkle,
+  },
+  {
+    id: 'nursery',
+    trueFn: (t) => 0.5 + 0.35 * Math.sin(Math.PI * 2 * t),
+    badGradient: 'linear-gradient(180deg, #3a1020 0%, #7a1f3d 40%, #c0335f 75%, #e8608a 100%)',
+    goodGradient: 'linear-gradient(180deg, #0f1a3d 0%, #24356b 35%, #4a5a9e 70%, #8fa3d9 100%)',
+    BadDecor: BabyCrying,
+    GoodDecor: BabySleeping,
+    Floater: FloatingZ,
+  },
+];
+
+const THEME_DATA = THEMES.map((theme) => ({
+  flatMse: mseAgainstTrue(FLAT_YS, theme.trueFn),
+  dataPoints: DATA_TS.map((t, i) => ({
+    x: t,
+    y: clamp01(theme.trueFn(t) + DATA_NOISE[i]),
+  })),
+}));
+
+const DECOR_SLOTS = [
+  { size: 30, hue: -8, delay: 0 },
+  { size: 42, hue: 4, delay: 0.3 },
+  { size: 36, hue: -4, delay: 0.15 },
+  { size: 42, hue: 6, delay: 0.45 },
+  { size: 32, hue: -6, delay: 0.6 },
+];
+
+const FLOAT_SLOTS = [
+  { top: '18%', duration: 13, delay: -2 },
+  { top: '30%', duration: 17, delay: -8 },
+  { top: '10%', duration: 15, delay: -5 },
+];
 
 function Mascot({ goodness }: { goodness: number }) {
   const mouthPath =
@@ -227,46 +299,17 @@ function Mascot({ goodness }: { goodness: number }) {
 
   return (
     <svg width="56" height="56" viewBox="0 0 44 44">
-      <circle
-        cx="22"
-        cy="22"
-        r="20"
-        fill="#F7F4EE"
-        stroke="#1B1B18"
-        strokeWidth="2.5"
-      />
+      <circle cx="22" cy="22" r="20" fill="#F7F4EE" stroke="#1B1B18" strokeWidth="2.5" />
       <circle cx="15" cy="19" r="2.4" fill="#1B1B18" />
       <circle cx="29" cy="19" r="2.4" fill="#1B1B18" />
       {goodness < 0.35 && (
         <>
-          <path
-            d="M11 13 L18 16"
-            stroke="#1B1B18"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M33 13 L26 16"
-            stroke="#1B1B18"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M32 9 q3 2 1 6"
-            stroke="#4aa8d8"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-          />
+          <path d="M11 13 L18 16" stroke="#1B1B18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M33 13 L26 16" stroke="#1B1B18" strokeWidth="2" strokeLinecap="round" />
+          <path d="M32 9 q3 2 1 6" stroke="#4aa8d8" strokeWidth="2" fill="none" strokeLinecap="round" />
         </>
       )}
-      <path
-        d={mouthPath}
-        stroke="#1B1B18"
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-      />
+      <path d={mouthPath} stroke="#1B1B18" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       {goodness > 0.7 && (
         <>
           <circle cx="10" cy="25" r="2.5" fill="#e8a5a5" opacity="0.7" />
@@ -279,14 +322,16 @@ function Mascot({ goodness }: { goodness: number }) {
 
 export default function FitGame() {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [controlYs, setControlYs] = useState<number[]>(() =>
-    CONTROL_XS.map(() => 0.5),
-  );
+  const [themeIndex, setThemeIndex] = useState(0);
+  const [controlYs, setControlYs] = useState<number[]>(() => CONTROL_XS.map(() => 0.5));
   const [dragging, setDragging] = useState<number | null>(null);
 
-  const mse = useMemo(() => mseAgainstTrue(controlYs), [controlYs]);
-  const goodness = clamp01(1 - mse / FLAT_MSE);
-  const errorPercent = Math.round(clamp01(mse / FLAT_MSE) * 100);
+  const theme = THEMES[themeIndex];
+  const { flatMse, dataPoints } = THEME_DATA[themeIndex];
+
+  const mse = useMemo(() => mseAgainstTrue(controlYs, theme.trueFn), [controlYs, theme]);
+  const goodness = clamp01(1 - mse / flatMse);
+  const errorPercent = Math.round(clamp01(mse / flatMse) * 100);
 
   const prevErrorRef = useRef(errorPercent);
   const [trend, setTrend] = useState<'up' | 'down' | null>(null);
@@ -324,8 +369,17 @@ export default function FitGame() {
   };
 
   const handleReset = () => setControlYs(CONTROL_XS.map(() => 0.5));
+  const handleChangeGraph = () => {
+    setThemeIndex((i) => (i + 1) % THEMES.length);
+    setControlYs(CONTROL_XS.map(() => 0.5));
+    setDragging(null);
+    setTrend(null);
+  };
 
-  const birdOpacity = clamp01((goodness - 0.5) * 2);
+  const floatOpacity = clamp01((goodness - 0.5) * 2);
+  const BadDecor = theme.BadDecor;
+  const GoodDecor = theme.GoodDecor;
+  const Floater = theme.Floater;
 
   return (
     <div
@@ -334,58 +388,27 @@ export default function FitGame() {
     >
       <div
         className="absolute inset-0"
-        style={{
-          background: FIRE_GRADIENT,
-          opacity: 1 - goodness,
-          transition: 'opacity 400ms ease',
-        }}
+        style={{ background: theme.badGradient, opacity: 1 - goodness, transition: 'opacity 400ms ease, background 500ms ease' }}
       />
       <div
         className="absolute inset-0"
-        style={{
-          background: FOREST_GRADIENT,
-          opacity: goodness,
-          transition: 'opacity 400ms ease',
-        }}
+        style={{ background: theme.goodGradient, opacity: goodness, transition: 'opacity 400ms ease, background 500ms ease' }}
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 h-2/3 overflow-hidden">
-        {BIRDS.map((b, i) => (
-          <Bird
-            key={i}
-            top={b.top}
-            duration={b.duration}
-            delay={b.delay}
-            opacity={birdOpacity}
-          />
+        {FLOAT_SLOTS.map((f, i) => (
+          <Floater key={i} top={f.top} duration={f.duration} delay={f.delay} opacity={floatOpacity} />
         ))}
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between px-4 pb-1 sm:px-10">
         {DECOR_SLOTS.map((slot, i) => (
-          <div
-            key={i}
-            className="relative"
-            style={{ width: slot.size, height: slot.size * 1.4 }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{ opacity: goodness, transition: 'opacity 400ms ease' }}
-            >
-              <Tree size={slot.size} style={{ animationDelay: `${slot.delay}s` }} />
+          <div key={i} className="relative" style={{ width: slot.size, height: slot.size * 1.4 }}>
+            <div className="absolute inset-0" style={{ opacity: goodness, transition: 'opacity 400ms ease' }}>
+              <GoodDecor size={slot.size} hue={slot.hue} style={{ animationDelay: `${slot.delay}s` }} />
             </div>
-            <div
-              className="absolute inset-0"
-              style={{
-                opacity: 1 - goodness,
-                transition: 'opacity 400ms ease',
-              }}
-            >
-              <BurningTree
-                size={slot.size}
-                hue={slot.hue}
-                style={{ animationDelay: `${slot.delay}s` }}
-              />
+            <div className="absolute inset-0" style={{ opacity: 1 - goodness, transition: 'opacity 400ms ease' }}>
+              <BadDecor size={slot.size} hue={slot.hue} style={{ animationDelay: `${slot.delay}s` }} />
             </div>
           </div>
         ))}
@@ -397,9 +420,7 @@ export default function FitGame() {
 
       <div className="absolute left-4 top-4 max-w-[240px] rounded-2xl bg-[#F7F4EE]/90 px-4 py-3 shadow-sm backdrop-blur-sm sm:left-8 sm:top-6">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-[#4A4740] sm:text-xs">
-            Error
-          </span>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-[#4A4740] sm:text-xs">Error</span>
           <span
             className="flex items-center gap-1 text-lg font-black tabular-nums sm:text-xl"
             style={{ color: errorColor, transition: 'color 300ms ease' }}
@@ -409,16 +430,23 @@ export default function FitGame() {
             {errorPercent}
           </span>
         </div>
-        <p className="mt-1 text-xs font-light leading-snug text-[#4A4740]">
-          {hint}
-        </p>
-        <button
-          onClick={handleReset}
-          className="mt-2 flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
-        >
-          <RotateCcw size={12} />
-          Reset
-        </button>
+        <p className="mt-1 text-xs font-light leading-snug text-[#4A4740]">{hint}</p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
+          >
+            <RotateCcw size={12} />
+            Reset
+          </button>
+          <button
+            onClick={handleChangeGraph}
+            className="flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
+          >
+            <Shuffle size={12} />
+            Change Graph
+          </button>
+        </div>
       </div>
 
       <svg
@@ -439,26 +467,11 @@ export default function FitGame() {
           />
         ))}
 
-        {DATA_POINTS.map((p, i) => (
-          <circle
-            key={i}
-            cx={pixelX(p.x)}
-            cy={pixelY(p.y)}
-            r={6}
-            fill="#1B1B18"
-            stroke="#F7F4EE"
-            strokeWidth={2}
-          />
+        {dataPoints.map((p, i) => (
+          <circle key={i} cx={pixelX(p.x)} cy={pixelY(p.y)} r={6} fill="#1B1B18" stroke="#F7F4EE" strokeWidth={2} />
         ))}
 
-        <path
-          d={curvePath}
-          fill="none"
-          stroke="#1B1B18"
-          strokeWidth={5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d={curvePath} fill="none" stroke="#1B1B18" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
 
         {controlYs.map((cy, i) => (
           <g key={i}>
