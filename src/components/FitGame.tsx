@@ -382,8 +382,9 @@ export default function FitGame() {
   const Floater = theme.Floater;
 
   return (
+    <div className="w-full">
     <div
-      className="relative h-full w-full overflow-hidden rounded-[28px] sm:rounded-[36px]"
+      className="relative h-[300px] w-full overflow-hidden rounded-[28px] sm:h-[360px] sm:rounded-[36px]"
       style={{ boxShadow: '0 16px 34px rgba(27,27,24,0.18)' }}
     >
       <div
@@ -431,22 +432,6 @@ export default function FitGame() {
           </span>
         </div>
         <p className="mt-1 text-xs font-light leading-snug text-[#4A4740]">{hint}</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
-          >
-            <RotateCcw size={12} />
-            Reset
-          </button>
-          <button
-            onClick={handleChangeGraph}
-            className="flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
-          >
-            <Shuffle size={12} />
-            Change Graph
-          </button>
-        </div>
       </div>
 
       <svg
@@ -505,6 +490,26 @@ export default function FitGame() {
           </g>
         ))}
       </svg>
+    </div>
+
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={handleReset}
+          className="relative z-10 flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 bg-[#F7F4EE] px-4 py-2 text-xs font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
+        >
+          <RotateCcw size={13} />
+          Reset
+        </button>
+        <button
+          type="button"
+          onClick={handleChangeGraph}
+          className="relative z-10 flex items-center gap-1.5 rounded-full border border-[#1B1B18]/25 bg-[#F7F4EE] px-4 py-2 text-xs font-medium uppercase tracking-widest text-[#1B1B18] transition-colors duration-200 hover:border-[#12483d] hover:text-[#12483d]"
+        >
+          <Shuffle size={13} />
+          Change Graph
+        </button>
+      </div>
     </div>
   );
 }

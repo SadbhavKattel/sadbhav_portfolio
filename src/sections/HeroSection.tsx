@@ -7,7 +7,7 @@ const NAV_LINKS = ['Projects', 'About', 'Skills', 'Contact'];
 export default function HeroSection() {
   return (
     <section
-      className="relative flex h-screen flex-col"
+      className="relative flex min-h-screen flex-col"
       style={{ overflowX: 'clip' }}
     >
       <FadeIn
@@ -29,7 +29,7 @@ export default function HeroSection() {
         </div>
       </FadeIn>
 
-      <div className="relative z-20 flex flex-1 flex-col items-center justify-center gap-6 px-6 pt-16 text-center sm:gap-8">
+      <div className="relative z-20 flex flex-col items-center gap-6 px-6 pb-6 pt-28 text-center sm:gap-8 sm:pt-32">
         <div className="overflow-hidden">
           <FadeIn delay={0.15} y={40}>
             <h1 className="hero-heading w-full whitespace-nowrap text-center text-[9vw] font-black uppercase leading-none tracking-tight sm:text-[8vw] md:text-[7vw] lg:text-[5.5vw]">
@@ -53,11 +53,13 @@ export default function HeroSection() {
         </FadeIn>
       </div>
 
+      <div className="flex-1" />
+
       <FadeIn
         delay={0.4}
-        className="relative z-10 flex h-[40vh] min-h-[300px] w-full items-center justify-center px-6 pb-8 sm:h-[44vh] md:h-[46vh]"
+        className="relative z-10 flex w-full items-center justify-center px-6 pb-12 pt-6"
       >
-        <div className="h-full w-full max-w-xl sm:max-w-2xl">
+        <div className="w-full max-w-xl sm:max-w-2xl">
           <FitGame />
         </div>
       </FadeIn>
