@@ -1,32 +1,57 @@
-# React + TypeScript + Vite
+# Sadbhav Kattel — Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+My personal portfolio site: a single-page site introducing me, the projects I've built, and how to get in touch.
 
-Currently, two official plugins are available:
+**Live:** _add your deployed URL here once hosted_
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/) for dev/build tooling
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Framer Motion](https://motion.dev/) for scroll-triggered fade-in animations
+- [lucide-react](https://lucide.dev/) for icons
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Structure
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+src/
+  components/       Reusable building blocks (FadeIn, AnimatedText, ContactButton)
+  sections/         Page sections rendered in order by App.tsx
+    HeroSection.tsx
+    ProjectsSection.tsx
+    AboutSection.tsx
+    SkillsSection.tsx
+    Footer.tsx
+  data/
+    projects.ts     Project list shown in the Projects section
+    skills.ts        Skill list shown in the Skills section
+  App.tsx           Assembles the sections
+  main.tsx          React entry point
+  index.css         Tailwind imports + global styles
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+To add or update a project, edit `src/data/projects.ts`. To add or update a skill, edit `src/data/skills.ts`. Both are typed arrays, so TypeScript will catch missing fields.
+
+## Getting started
+
+```bash
+npm install
+npm run dev       # start local dev server
+npm run build      # type-check + production build to dist/
+npm run preview    # preview the production build locally
+npm run lint       # run oxlint
+```
+
+## Deploying
+
+This is a static Vite build (`dist/`), so it deploys as-is to any static host:
+
+- **Vercel / Netlify**: import the repo, build command `npm run build`, output directory `dist`.
+- **GitHub Pages**: build locally and push `dist/` to a `gh-pages` branch, or use a GitHub Actions workflow that runs `npm run build` and publishes `dist/`.
+
+## Contact
+
+- GitHub: [SadbhavKattel](https://github.com/SadbhavKattel)
+- LinkedIn: [sadbhav-kattel](https://www.linkedin.com/in/sadbhav-kattel-2ab3aa29a/)
+- Email: kattelsubha@gmail.com
