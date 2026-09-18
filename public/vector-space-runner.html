@@ -135,16 +135,36 @@
     height: 340px;
     border-radius: 20px;
     overflow: hidden;
-    background: radial-gradient(ellipse at 50% 20%, #FFFFFF 0%, #ECE7DA 70%);
+    background-color: #FBF9F1;
+    background-image:
+      linear-gradient(rgba(47, 111, 237, 0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47, 111, 237, 0.10) 1px, transparent 1px);
+    background-size: 26px 26px;
     border: 1px solid var(--panel-border);
   }
 
-  #glcanvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  #canvasDoodles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .doodle {
+    position: absolute;
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgba(47, 111, 237, 0.16);
+    font-weight: 600;
+    user-select: none;
+  }
+
+  #glcanvas { position: relative; z-index: 1; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; background: transparent; }
   #glcanvas:active { cursor: grabbing; }
 
   #labelLayer {
     position: absolute;
     inset: 0;
+    z-index: 2;
     pointer-events: none;
   }
 
@@ -230,7 +250,19 @@
     overflow: hidden;
   }
   .code-line { white-space: pre; }
-  #demoCanvasWrap { position: relative; width: 100%; height: 130px; margin-top: 4px; border-radius: 8px; overflow: hidden; background: rgba(27, 27, 24, 0.03); }
+  #demoCanvasWrap {
+    position: relative;
+    width: 100%;
+    height: 130px;
+    margin-top: 4px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #FBF9F1;
+    background-image:
+      linear-gradient(rgba(47, 111, 237, 0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47, 111, 237, 0.10) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
   #demoCanvas { display: block; width: 100%; height: 100%; }
   #demoLabelLayer { position: absolute; inset: 0; pointer-events: none; }
   .demo-axis-label {
@@ -346,6 +378,19 @@
     font-weight: 700;
   }
 
+  .slider-track-wrap { position: relative; }
+  .true-marker {
+    position: absolute;
+    top: 50%;
+    width: 3px;
+    height: 16px;
+    transform: translate(-50%, -50%);
+    border-radius: 2px;
+    pointer-events: none;
+    box-shadow: 0 0 0 1.5px #fff;
+    display: none;
+  }
+
   .vslider {
     -webkit-appearance: none;
     appearance: none;
@@ -382,26 +427,33 @@
     padding-top: 16px;
     border-top: 1px dashed var(--panel-border);
   }
-  .rank-badge {
-    display: inline-block;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 19px;
-    font-weight: 700;
+  .reveal-vec-row {
+    margin-bottom: 10px;
+  }
+  .reveal-vec-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 6px 18px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    color: #fff;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+  .reveal-vec-code {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
   }
   .reveal-score-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 10px;
+    margin: 14px 0 10px;
   }
   .reveal-score-row .big {
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 900;
+    color: var(--text);
   }
   .coord-row {
     display: flex;
@@ -502,6 +554,14 @@
     <main id="stage">
       <section id="canvasPane">
         <div id="canvasContainer">
+          <div id="canvasDoodles">
+            <span class="doodle" style="left: 6%; top: 10%; font-size: 30px; transform: rotate(-8deg);">&Sigma;</span>
+            <span class="doodle" style="right: 8%; top: 14%; font-size: 24px; transform: rotate(6deg);">&int;</span>
+            <span class="doodle" style="left: 10%; bottom: 12%; font-size: 22px; transform: rotate(4deg);">&pi;</span>
+            <span class="doodle" style="right: 12%; bottom: 16%; font-size: 20px; transform: rotate(-5deg);">&theta;</span>
+            <span class="doodle" style="left: 46%; top: 6%; font-size: 16px; transform: rotate(3deg);">&#8594;v</span>
+            <span class="doodle" style="right: 30%; bottom: 8%; font-size: 16px; transform: rotate(-4deg);">&radic;x</span>
+          </div>
           <canvas id="glcanvas"></canvas>
           <div id="labelLayer"></div>
 
@@ -539,11 +599,9 @@
           <button id="submitBtn" class="primary-btn" type="button">Submit Vector</button>
 
           <div id="revealPanel" class="hidden">
-            <div class="rank-badge" id="rankBadge">GREAT</div>
+            <div class="reveal-vec-row"><span class="reveal-vec-label">Your vector</span><span class="reveal-vec-code" id="revealYourVec">(0, 0, 0)</span></div>
+            <div class="reveal-vec-row"><span class="reveal-vec-label">True vector</span><span class="reveal-vec-code" id="revealTrueVec">(0, 0, 0)</span></div>
             <div class="reveal-score-row"><span class="big" id="revealScore">0%</span><span>match</span></div>
-
-            <div class="coord-row"><span>Your vector</span><span id="revealYourVec">(0, 0, 0)</span></div>
-            <div class="coord-row"><span>True vector</span><span id="revealTrueVec">(0, 0, 0)</span></div>
 
             <button id="nextWordBtn" class="primary-btn secondary-btn" type="button" style="margin-top: 14px;">Try Another Word</button>
           </div>
@@ -615,15 +673,6 @@
     return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   }
 
-  function lerpColor(hexA, hexB, t) {
-    var a = parseInt(hexA.slice(1), 16), b = parseInt(hexB.slice(1), 16);
-    var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
-    var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
-    var r = Math.round(ar + (br - ar) * t);
-    var g = Math.round(ag + (bg - ag) * t);
-    var bl = Math.round(ab + (bb - ab) * t);
-    return 'rgb(' + r + ', ' + g + ', ' + bl + ')';
-  }
 
   // --- game data ------------------------------------------------------------
   // "True" embeddings below are hand-authored to demonstrate the geometry
@@ -672,18 +721,6 @@
       ],
     },
   ];
-
-  // Stricter tiers: within ~15% match is PERFECT, matching the requested
-  // "close by 15 percent = perfect" scale, cascading down from there.
-  function getVerdict(score) {
-    if (score >= 85) return 'PERFECT';
-    if (score >= 65) return 'GREAT';
-    if (score >= 35) return 'OK';
-    return 'MISS';
-  }
-  function scoreColor(score) {
-    return lerpColor('#c23b2b', '#1f7a4d', clamp(score / 100, 0, 1));
-  }
 
   // --- shared visual helpers -------------------------------------------------
 
@@ -759,7 +796,7 @@
   // =========================================================================
 
   var scene, camera, renderer, canvasContainer, canvasEl;
-  var cameraRig = { theta: Math.PI / 4, phi: Math.PI / 2.6, radius: 8.5 };
+  var cameraRig = { theta: Math.PI / 4, phi: Math.PI / 2.6, radius: 6.8 };
   var isDragging = false;
   var lastPointer = { x: 0, y: 0 };
   var particles = null;
@@ -780,12 +817,12 @@
     canvasEl = document.getElementById('glcanvas');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xF7F4EE);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     updateCameraPosition();
 
-    renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
+    renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+    renderer.setClearAlpha(0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     resizeRenderer();
 
@@ -835,6 +872,7 @@
   }
   function onPointerUp() { isDragging = false; }
   function onWheel(e) {
+    if (!e.shiftKey) return;
     e.preventDefault();
     cameraRig.radius = clamp(cameraRig.radius + e.deltaY * 0.01, 4, 16);
     updateCameraPosition();
@@ -1033,7 +1071,10 @@
       row.className = 'slider-row';
       row.innerHTML =
         '<div class="slider-row-head"><span>' + axisName + '</span><span class="slider-value" id="sliderVal' + i + '">0.00</span></div>' +
-        '<input type="range" min="-1" max="1" step="0.01" value="0" class="vslider" id="slider' + i + '" />';
+        '<div class="slider-track-wrap">' +
+        '<input type="range" min="-1" max="1" step="0.01" value="0" class="vslider" id="slider' + i + '" />' +
+        '<div class="true-marker" id="trueMarker' + i + '"></div>' +
+        '</div>';
       container.appendChild(row);
     });
     theme.axes.forEach(function (_, i) {
@@ -1079,19 +1120,25 @@
       buildArc(guessTip, truePos, ACCENT_COLOR, wordColorNum);
     });
 
+    showTrueMarkers(word);
     buildRevealContent(word, score);
     pushHistory(word, score);
   }
 
+  function showTrueMarkers(word) {
+    word.vec.forEach(function (v, i) {
+      var marker = document.getElementById('trueMarker' + i);
+      if (!marker) return;
+      marker.style.left = (((v + 1) / 2) * 100) + '%';
+      marker.style.background = word.color;
+      marker.style.display = 'block';
+    });
+  }
+
   function buildRevealContent(word, score) {
-    var color = scoreColor(score);
-    var badge = document.getElementById('rankBadge');
-    badge.textContent = getVerdict(score);
-    badge.style.background = color;
-    document.getElementById('revealScore').textContent = score + '%';
-    document.getElementById('revealScore').style.color = color;
     document.getElementById('revealYourVec').textContent = fmtVec(guessVec);
     document.getElementById('revealTrueVec').textContent = fmtVec(word.vec);
+    document.getElementById('revealScore').textContent = score + '%';
     document.getElementById('submitBtn').classList.add('hidden');
     document.getElementById('revealPanel').classList.remove('hidden');
   }
@@ -1102,7 +1149,7 @@
     var list = document.getElementById('historyList');
     var item = document.createElement('div');
     item.className = 'history-item';
-    item.innerHTML = '<span class="hi-word">' + word.emoji + ' ' + word.label + '</span><span class="hi-score" style="color:' + scoreColor(score) + '">' + score + '%</span>';
+    item.innerHTML = '<span class="hi-word">' + word.emoji + ' ' + word.label + '</span><span class="hi-score">' + score + '%</span>';
     list.appendChild(item);
     list.scrollTop = list.scrollHeight;
   }
@@ -1135,11 +1182,11 @@
     demoCanvasEl = document.getElementById('demoCanvas');
 
     demoScene = new THREE.Scene();
-    demoScene.background = new THREE.Color(0xFFFFFF);
 
     demoCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
 
-    demoRenderer = new THREE.WebGLRenderer({ canvas: demoCanvasEl, antialias: true });
+    demoRenderer = new THREE.WebGLRenderer({ canvas: demoCanvasEl, antialias: true, alpha: true });
+    demoRenderer.setClearAlpha(0);
     demoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     resizeDemoRenderer();
 
