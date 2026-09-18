@@ -637,19 +637,25 @@
   'use strict';
 
   var SCALE = 2.6;
-  var AXIS_LEN = SCALE * 1.25;
+  var AXIS_LEN = SCALE * 1.15;
   var DEMO_SCALE = 1.7;
   var DEMO_AXIS_LEN = DEMO_SCALE * 1.3;
   var ACCENT_COLOR = 0x2F6FED;
 
   // --- math helpers -------------------------------------------------------
 
-  function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
-  function mag(a) { return Math.sqrt(dot(a, a)); }
-  function cosineSimilarity(a, b) {
-    var ma = mag(a), mb = mag(b);
-    if (ma < 1e-6 || mb < 1e-6) return 0;
-    return dot(a, b) / (ma * mb);
+  function euclideanDistance(a, b) {
+    var sum = 0;
+    for (var i = 0; i < a.length; i++) { var d = a[i] - b[i]; sum += d * d; }
+    return Math.sqrt(sum);
+  }
+  // Each axis ranges from -1 to 1 (span of 2), so the worst possible guess
+  // sits at the opposite corner of the cube: sqrt(numAxes * 2^2).
+  function maxPossibleDistance(numAxes) { return Math.sqrt(numAxes * 4); }
+  function scoreFromVectors(guess, truth) {
+    var dist = euclideanDistance(guess, truth);
+    var pct = 1 - dist / maxPossibleDistance(truth.length);
+    return Math.round(clamp(pct, 0, 1) * 100);
   }
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
   function vecToWorld(v, scale) { return new THREE.Vector3(v[0] * scale, v[1] * scale, v[2] * scale); }
@@ -747,22 +753,27 @@
 
   function makeEmojiSprite(emoji, size, opacity) {
     var tex = makeEmojiTexture(emoji);
-    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opacity === undefined ? 1 : opacity, depthWrite: false });
+    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opacity === undefined ? 1 : opacity, depthWrite: false, depthTest: false });
     var sprite = new THREE.Sprite(mat);
     sprite.scale.set(size, size, size);
+    sprite.renderOrder = 10;
     return sprite;
   }
 
   function makeOriginLine(targetPos, color, opacity) {
     var geom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), targetPos]);
-    var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
-    return new THREE.Line(geom, mat);
+    var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity, depthWrite: false, depthTest: false });
+    var line = new THREE.Line(geom, mat);
+    line.renderOrder = 1;
+    return line;
   }
 
   function makeGuessRing(size) {
     var geom = new THREE.RingGeometry(size * 0.62, size * 0.68, 32);
-    var mat = new THREE.MeshBasicMaterial({ color: ACCENT_COLOR, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false });
-    return new THREE.Mesh(geom, mat);
+    var mat = new THREE.MeshBasicMaterial({ color: ACCENT_COLOR, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false, depthTest: false });
+    var ring = new THREE.Mesh(geom, mat);
+    ring.renderOrder = 2;
+    return ring;
   }
 
   function colorizeTubeAlongLength(geometry, colorA, colorB) {
@@ -796,7 +807,7 @@
   // =========================================================================
 
   var scene, camera, renderer, canvasContainer, canvasEl;
-  var cameraRig = { theta: Math.PI / 4, phi: Math.PI / 2.6, radius: 6.8 };
+  var cameraRig = { theta: Math.PI / 4, phi: Math.PI / 2.6, radius: 7.6 };
   var isDragging = false;
   var lastPointer = { x: 0, y: 0 };
   var particles = null;
@@ -989,7 +1000,8 @@
     var curve = new THREE.QuadraticBezierCurve3(fromVec3, mid, toVec3);
     var geom = new THREE.TubeGeometry(curve, 40, 0.02, 8, false);
     colorizeTubeAlongLength(geom, colorA, colorB);
-    var mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false }));
+    var mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false, depthTest: false }));
+    mesh.renderOrder = 1;
     addMesh(mesh, 'game');
   }
 
@@ -1102,8 +1114,7 @@
 
     var theme = THEMES[currentThemeIndex];
     var word = theme.words[currentWordIndex % theme.words.length];
-    var cos = cosineSimilarity(guessVec, word.vec);
-    var score = Math.round(Math.max(0, cos) * 100);
+    var score = scoreFromVectors(guessVec, word.vec);
 
     var guessTip = guessSprite.position.clone();
     var truePos = vecToWorld(word.vec, SCALE);
