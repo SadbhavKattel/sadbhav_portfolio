@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Words to Vectors</title>
+<title>Word to Vector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   :root {
     --bg: #0B0E14;
@@ -45,10 +48,22 @@
   .brand {
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    font-weight: 800;
-    font-size: clamp(14px, 2.4vw, 17px);
-    letter-spacing: 0.01em;
+    gap: 10px;
+  }
+
+  .brand-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 400;
+    font-size: clamp(13px, 2.2vw, 16px);
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+
+  .brand-vector {
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.34em;
+    padding-left: 0.2em;
   }
 
   .brand-dot {
@@ -60,10 +75,6 @@
     flex-shrink: 0;
   }
 
-  .brand-arrow {
-    color: var(--cyan);
-    font-weight: 500;
-  }
 
   button {
     font-family: inherit;
@@ -356,64 +367,24 @@
   .vslider:disabled::-webkit-slider-thumb { background: #4a5568; box-shadow: none; }
   .vslider:disabled { opacity: 0.5; }
 
-  .live-vector { margin-top: 4px; margin-bottom: 4px; }
-  .live-vector-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    margin-bottom: 4px;
-  }
-  .live-vector-code {
-    font-family: 'SF Mono', Menlo, Consolas, monospace;
-    font-size: 13px;
-    color: var(--cyan);
-    background: rgba(0, 243, 255, 0.06);
-    border: 1px solid rgba(0, 243, 255, 0.18);
-    border-radius: 8px;
-    padding: 8px 10px;
-    letter-spacing: 0.01em;
-  }
-
-  .live-sim { margin-top: 18px; margin-bottom: 16px; }
-  .live-sim-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .meter {
-    width: 100%;
-    height: 8px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-  }
-  .meter-fill {
-    height: 100%;
-    width: 0%;
-    border-radius: 999px;
-    background: #c23b2b;
-    transition: width 120ms ease, background 200ms ease;
-  }
-
   #revealPanel {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px dashed var(--panel-border);
   }
-  .verdict-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
+  .rank-badge {
+    display: inline-block;
+    font-size: 20px;
     font-weight: 800;
-    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+    padding: 6px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
   }
-  .verdict-emoji { font-size: 22px; }
+  .rank-perfect { color: #241c00; background: linear-gradient(135deg, #FFD700, #ffe680); }
+  .rank-great { color: #06181c; background: linear-gradient(135deg, #00F3FF, #8bf9ff); }
+  .rank-ok { color: #241c00; background: #d9a441; }
+  .rank-miss { color: var(--text); background: #3a3f4a; }
   .reveal-score-row {
     display: flex;
     align-items: baseline;
@@ -514,7 +485,7 @@
     <header id="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        Words <span class="brand-arrow">&rarr;</span> Vectors
+        <span class="brand-text">WORD TO [<span class="brand-vector">VECTOR</span>]</span>
       </div>
       <div class="topbar-right">
         <button id="exportBtn" class="ghost-btn" type="button">Export</button>
@@ -556,21 +527,11 @@
 
           <div id="slidersContainer"></div>
 
-          <div class="live-vector">
-            <div class="live-vector-label">Your Vector</div>
-            <div class="live-vector-code" id="liveVectorCode">[ 0.00,  0.00,  0.00 ]</div>
-          </div>
-
-          <div class="live-sim">
-            <div class="live-sim-label"><span>Live Similarity</span><span id="liveMeterValue">0%</span></div>
-            <div class="meter"><div class="meter-fill" id="liveMeterFill"></div></div>
-          </div>
-
           <button id="submitBtn" class="primary-btn" type="button">Submit Vector</button>
 
           <div id="revealPanel" class="hidden">
-            <div class="verdict-row"><span class="verdict-emoji" id="verdictEmoji">&#128077;</span><span id="verdictText">Good guess!</span></div>
-            <div class="reveal-score-row"><span class="big" id="revealScore">0%</span><span>cosine similarity</span></div>
+            <div class="rank-badge" id="rankBadge">GREAT!</div>
+            <div class="reveal-score-row"><span class="big" id="revealScore">0%</span><span>match</span></div>
 
             <div class="coord-row"><span>Your vector</span><span id="revealYourVec">(0, 0, 0)</span></div>
             <div class="coord-row"><span>True vector</span><span id="revealTrueVec">(0, 0, 0)</span></div>
@@ -637,15 +598,6 @@
     var c4 = (2 * Math.PI) / 3;
     return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   }
-  function lerpColor(hexA, hexB, t) {
-    var a = parseInt(hexA.slice(1), 16), b = parseInt(hexB.slice(1), 16);
-    var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
-    var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
-    var r = Math.round(ar + (br - ar) * t);
-    var g = Math.round(ag + (bg - ag) * t);
-    var bl = Math.round(ab + (bb - ab) * t);
-    return 'rgb(' + r + ', ' + g + ', ' + bl + ')';
-  }
 
   // --- game data ------------------------------------------------------------
   // "True" embeddings below are hand-authored to demonstrate the geometry
@@ -696,10 +648,11 @@
   ];
 
   function getVerdict(cos) {
-    if (cos >= 0.9) return { emoji: '🔥', text: 'Excellent guess!' };
-    if (cos >= 0.75) return { emoji: '👍', text: 'Good guess!' };
-    if (cos >= 0.5) return { emoji: '🤔', text: 'Decent — room to improve.' };
-    return { emoji: '😬', text: 'Pretty far off — try again!' };
+    var pct = Math.max(0, cos) * 100;
+    if (pct >= 90) return { rank: 'PERFECT', cls: 'rank-perfect' };
+    if (pct >= 70) return { rank: 'GREAT', cls: 'rank-great' };
+    if (pct >= 40) return { rank: 'OK', cls: 'rank-ok' };
+    return { rank: 'MISS', cls: 'rank-miss' };
   }
 
   // --- shared visual helpers -------------------------------------------------
@@ -803,7 +756,9 @@
   var currentWordIndex = 0;
   var guessVec = [0, 0, 0];
   var wordSubmitted = false;
-  var currentGuessSprite = null, currentGuessRing = null, currentGuessLine = null;
+  var allGuessRings = [];
+  function trackGuessRing(ring) { allGuessRings.push(ring); }
+  function clearGuessRings() { allGuessRings = []; }
 
   function initMainScene() {
     canvasContainer = document.getElementById('canvasContainer');
@@ -978,7 +933,7 @@
       updateCameraPosition();
     }
     if (particles) particles.rotation.y = now * 0.00002;
-    if (currentGuessRing) currentGuessRing.quaternion.copy(camera.quaternion);
+    allGuessRings.forEach(function (ring) { ring.quaternion.copy(camera.quaternion); });
     updateLabels();
     renderer.render(scene, camera);
   }
@@ -1018,6 +973,7 @@
 
   function startTheme(themeIndex) {
     removeGroup('game');
+    clearGuessRings();
     currentThemeIndex = themeIndex;
     currentWordIndex = 0;
     var theme = THEMES[currentThemeIndex];
@@ -1038,35 +994,10 @@
     document.getElementById('targetEmoji').textContent = word.emoji;
     document.getElementById('targetWord').textContent = word.label;
 
-    var glowTex = makeGlowTexture('0,243,255');
-    var glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    var glow = new THREE.Sprite(glowMat);
-    glow.scale.set(0.9, 0.9, 0.9);
-    addMesh(glow, 'game');
-
-    currentGuessSprite = makeEmojiSprite(word.emoji, 0.55, 0.55);
-    addMesh(currentGuessSprite, 'game');
-    currentGuessRing = makeGuessRing(0.55);
-    addMesh(currentGuessRing, 'game');
-    currentGuessLine = makeOriginLine(new THREE.Vector3(0, 0, 0), 0x00F3FF, 0.35);
-    addMesh(currentGuessLine, 'game');
-
-    var currentGlow = glow;
-    updatePlayerVisual = function () {
-      var tip = vecToWorld(guessVec, SCALE);
-      currentGuessSprite.position.copy(tip);
-      currentGuessRing.position.copy(tip);
-      currentGlow.position.copy(tip);
-      currentGuessLine.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), tip]);
-    };
-    updatePlayerVisual();
-
     renderControlPanelForWord(theme, word, wordIndex);
     document.getElementById('revealPanel').classList.add('hidden');
     enableSliders();
   }
-
-  var updatePlayerVisual = function () {};
 
   function renderControlPanelForWord(theme, word, wordIndex) {
     var container = document.getElementById('slidersContainer');
@@ -1083,29 +1014,8 @@
       document.getElementById('slider' + i).addEventListener('input', function (e) {
         guessVec[i] = parseFloat(e.target.value);
         document.getElementById('sliderVal' + i).textContent = guessVec[i].toFixed(2);
-        updatePlayerVisual();
-        updateLiveMeter(theme, word);
-        updateLiveVectorCode();
       });
     });
-    updateLiveMeter(theme, word);
-    updateLiveVectorCode();
-  }
-
-  function updateLiveVectorCode() {
-    var text = '[ ' + guessVec.map(function (v) {
-      var s = v.toFixed(2);
-      return (v >= 0 ? ' ' : '') + s;
-    }).join(', ') + ' ]';
-    document.getElementById('liveVectorCode').textContent = text;
-  }
-
-  function updateLiveMeter(theme, word) {
-    var cos = cosineSimilarity(guessVec, word.vec);
-    var pct = Math.round(Math.max(0, cos) * 100);
-    document.getElementById('liveMeterFill').style.width = pct + '%';
-    document.getElementById('liveMeterFill').style.background = lerpColor('#c23b2b', '#1f7a4d', pct / 100);
-    document.getElementById('liveMeterValue').textContent = pct + '%';
   }
 
   function enableSliders() {
@@ -1127,8 +1037,28 @@
     var cos = cosineSimilarity(guessVec, word.vec);
     var score = Math.round(Math.max(0, cos) * 100);
 
-    var guessTip = currentGuessSprite.position.clone();
+    var guessPos = vecToWorld(guessVec, SCALE);
     var truePos = vecToWorld(word.vec, SCALE);
+
+    var guessGlowTex = makeGlowTexture('0,243,255');
+    var guessGlowMat = new THREE.SpriteMaterial({ map: guessGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    var guessGlow = new THREE.Sprite(guessGlowMat);
+    guessGlow.scale.set(0.9, 0.9, 0.9);
+    guessGlow.position.copy(guessPos);
+    addMesh(guessGlow, 'game');
+
+    var guessSprite = makeEmojiSprite(word.emoji, 0.55, 0.55);
+    guessSprite.position.copy(guessPos);
+    addMesh(guessSprite, 'game');
+
+    var guessRing = makeGuessRing(0.55);
+    guessRing.position.copy(guessPos);
+    addMesh(guessRing, 'game');
+    trackGuessRing(guessRing);
+
+    addMesh(makeOriginLine(guessPos, 0x00F3FF, 0.35), 'game');
+
+    var guessTip = guessPos.clone();
 
     var trueGlowTex = makeGlowTexture('255,215,0');
     var trueGlowMat = new THREE.SpriteMaterial({ map: trueGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
@@ -1153,8 +1083,9 @@
 
   function buildRevealContent(word, score, cos) {
     var verdict = getVerdict(cos);
-    document.getElementById('verdictEmoji').textContent = verdict.emoji;
-    document.getElementById('verdictText').textContent = verdict.text;
+    var badge = document.getElementById('rankBadge');
+    badge.textContent = verdict.rank;
+    badge.className = 'rank-badge ' + verdict.cls;
     document.getElementById('revealScore').textContent = score + '%';
     document.getElementById('revealYourVec').textContent = fmtVec(guessVec);
     document.getElementById('revealTrueVec').textContent = fmtVec(word.vec);

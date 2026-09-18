@@ -27,6 +27,14 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.hero-heading-dark {
+  color: #f7f4ee;
+  background: linear-gradient(180deg, #ffffff 0%, #00f3ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;

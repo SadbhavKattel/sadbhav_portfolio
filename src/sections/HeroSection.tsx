@@ -8,7 +8,7 @@ export default function HeroSection() {
   return (
     <section
       className="relative flex min-h-screen flex-col"
-      style={{ overflowX: 'clip' }}
+      style={{ overflowX: 'clip', background: '#0B0E14' }}
     >
       <FadeIn
         delay={0}
@@ -21,7 +21,7 @@ export default function HeroSection() {
             <a
               key={link}
               href={`#${link.toLowerCase()}`}
-              className="text-sm font-medium uppercase tracking-wider text-[#1B1B18] transition-opacity duration-200 hover:opacity-60 md:text-base lg:text-lg"
+              className="text-sm font-medium uppercase tracking-wider text-[#E8EDF4] transition-opacity duration-200 hover:opacity-60 md:text-base lg:text-lg"
             >
               {link}
             </a>
@@ -32,7 +32,7 @@ export default function HeroSection() {
       <div className="relative z-20 flex flex-col items-center gap-6 px-6 pb-6 pt-28 text-center sm:gap-8 sm:pt-32">
         <div className="overflow-hidden">
           <FadeIn delay={0.15} y={40}>
-            <h1 className="hero-heading w-full whitespace-nowrap text-center text-[9vw] font-black uppercase leading-none tracking-tight sm:text-[8vw] md:text-[7vw] lg:text-[5.5vw]">
+            <h1 className="hero-heading-dark w-full whitespace-nowrap text-center text-[9vw] font-black uppercase leading-none tracking-tight sm:text-[8vw] md:text-[7vw] lg:text-[5.5vw]">
               Hi, i&apos;m sadbhav
             </h1>
           </FadeIn>
@@ -40,7 +40,7 @@ export default function HeroSection() {
 
         <FadeIn delay={0.3} y={20}>
           <p
-            className="max-w-md font-light leading-relaxed text-[#4A4740]"
+            className="max-w-md font-light leading-relaxed text-[#9AA3B2]"
             style={{ fontSize: 'clamp(0.95rem, 1.6vw, 1.15rem)' }}
           >
             Software engineering student at UT Arlington, building full-stack

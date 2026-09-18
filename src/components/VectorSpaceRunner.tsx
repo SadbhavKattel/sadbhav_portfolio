@@ -6,7 +6,7 @@ export default function VectorSpaceRunner() {
     >
       <iframe
         src="/vector-space-runner.html"
-        title="Words to Vectors"
+        title="Word to Vector"
         loading="lazy"
         className="h-full w-full border-0"
       />
