@@ -1,6 +1,6 @@
 import FadeIn from '../components/FadeIn';
 import ContactButton from '../components/ContactButton';
-import FitGame from '../components/FitGame';
+import VectorSpaceRunner from '../components/VectorSpaceRunner';
 
 const NAV_LINKS = ['Projects', 'About', 'Skills', 'Contact'];
 
@@ -59,8 +59,8 @@ export default function HeroSection() {
         delay={0.4}
         className="relative z-10 flex w-full items-center justify-center px-6 pb-12 pt-6"
       >
-        <div className="w-full max-w-xl sm:max-w-2xl">
-          <FitGame />
+        <div className="w-full max-w-4xl sm:max-w-6xl">
+          <VectorSpaceRunner />
         </div>
       </FadeIn>
     </section>
