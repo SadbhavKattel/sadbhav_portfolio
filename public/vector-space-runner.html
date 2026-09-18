@@ -6,16 +6,17 @@
 <title>Word to Vector</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0B0E14;
-    --panel: rgba(255, 255, 255, 0.05);
-    --panel-border: rgba(255, 255, 255, 0.10);
-    --cyan: #00F3FF;
-    --gold: #FFD700;
-    --text: #E8EDF4;
-    --text-dim: #8B93A7;
+    --bg: #F7F4EE;
+    --panel: #FFFFFF;
+    --panel-border: rgba(27, 27, 24, 0.12);
+    --accent: #2F6FED;
+    --good: #1f7a4d;
+    --bad: #c23b2b;
+    --text: #1B1B18;
+    --text-dim: #6B655D;
   }
 
   * { box-sizing: border-box; }
@@ -70,11 +71,10 @@
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px 2px rgba(0, 243, 255, 0.65);
+    background: var(--accent);
+    box-shadow: 0 0 8px 1px rgba(47, 111, 237, 0.5);
     flex-shrink: 0;
   }
-
 
   button {
     font-family: inherit;
@@ -93,12 +93,12 @@
     letter-spacing: 0.06em;
     transition: border-color 160ms ease, color 160ms ease;
   }
-  .ghost-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
 
   .primary-btn {
-    background: linear-gradient(135deg, #00F3FF, #00b3c4);
+    background: var(--accent);
     border: none;
-    color: #06181c;
+    color: #fff;
     padding: 12px 20px;
     border-radius: 12px;
     font-size: 13px;
@@ -106,15 +106,17 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     width: 100%;
-    box-shadow: 0 8px 20px rgba(0, 243, 255, 0.22);
+    box-shadow: 0 8px 18px rgba(47, 111, 237, 0.25);
     transition: transform 120ms ease, opacity 120ms ease;
   }
   .primary-btn:hover { transform: translateY(-1px); }
   .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   .secondary-btn {
-    background: linear-gradient(135deg, #FFD700, #cf9e00);
-    color: #241c00;
+    background: #fff;
+    color: var(--text);
+    border: 2px solid var(--text);
+    box-shadow: none;
   }
 
   #stage {
@@ -133,7 +135,7 @@
     height: 340px;
     border-radius: 20px;
     overflow: hidden;
-    background: radial-gradient(ellipse at 50% 20%, #131826 0%, #0B0E14 70%);
+    background: radial-gradient(ellipse at 50% 20%, #FFFFFF 0%, #ECE7DA 70%);
     border: 1px solid var(--panel-border);
   }
 
@@ -156,16 +158,21 @@
     border-radius: 999px;
     letter-spacing: 0.02em;
   }
-  .ref-label {
-    background: rgba(232, 237, 244, 0.14);
-    border: 1px solid rgba(232, 237, 244, 0.35);
-    color: #F2F5F9;
-    backdrop-filter: blur(2px);
+  .vlabel-below {
+    transform: translate(-50%, 45%);
+  }
+  .guess-vector-label {
+    background: #fff;
+    border: 1px solid var(--panel-border);
+    color: var(--accent);
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-weight: 600;
+    font-size: 10px;
   }
   .vlabel-target {
-    background: rgba(255, 215, 0, 0.16);
-    border: 1px solid rgba(255, 215, 0, 0.6);
-    color: var(--gold);
+    background: #fff;
+    border: 1px solid currentColor;
+    font-weight: 800;
   }
   .axis-label {
     background: none;
@@ -184,12 +191,12 @@
     top: 12px;
     width: min(258px, 68vw);
     z-index: 20;
-    background: rgba(10, 13, 20, 0.88);
-    border: 1px solid rgba(0, 243, 255, 0.28);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--panel-border);
     border-radius: 14px;
     padding: 10px;
     backdrop-filter: blur(6px);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 10px 24px rgba(27, 27, 24, 0.14);
   }
   .demo-header {
     display: flex;
@@ -202,7 +209,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--cyan);
+    color: var(--accent);
   }
   .demo-close-btn {
     background: none;
@@ -217,13 +224,13 @@
     font-family: 'SF Mono', Menlo, Consolas, monospace;
     font-size: 9.5px;
     line-height: 1.6;
-    color: #9be9c9;
+    color: var(--good);
     min-height: 64px;
     white-space: pre;
     overflow: hidden;
   }
   .code-line { white-space: pre; }
-  #demoCanvasWrap { position: relative; width: 100%; height: 130px; margin-top: 4px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.03); }
+  #demoCanvasWrap { position: relative; width: 100%; height: 130px; margin-top: 4px; border-radius: 8px; overflow: hidden; background: rgba(27, 27, 24, 0.03); }
   #demoCanvas { display: block; width: 100%; height: 100%; }
   #demoLabelLayer { position: absolute; inset: 0; pointer-events: none; }
   .demo-axis-label {
@@ -251,17 +258,18 @@
     display: none;
     align-items: center;
     gap: 6px;
-    background: rgba(10, 13, 20, 0.88);
-    border: 1px solid rgba(0, 243, 255, 0.4);
-    color: var(--cyan);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--panel-border);
+    color: var(--accent);
     padding: 8px 14px;
     border-radius: 999px;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    box-shadow: 0 6px 16px rgba(27, 27, 24, 0.1);
   }
-  #demoPill:hover { border-color: var(--cyan); }
+  #demoPill:hover { border-color: var(--accent); }
 
   #controlPane {
     width: 100%;
@@ -271,19 +279,19 @@
     overflow-y: auto;
     max-height: 620px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 243, 255, 0.35) transparent;
+    scrollbar-color: rgba(47, 111, 237, 0.3) transparent;
   }
   #controlPane::-webkit-scrollbar { width: 6px; }
   #controlPane::-webkit-scrollbar-track { background: transparent; }
-  #controlPane::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 999px; }
-  #controlPane::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.5); }
+  #controlPane::-webkit-scrollbar-thumb { background: rgba(47, 111, 237, 0.25); border-radius: 999px; }
+  #controlPane::-webkit-scrollbar-thumb:hover { background: rgba(47, 111, 237, 0.45); }
 
   .panel {
     background: var(--panel);
     border: 1px solid var(--panel-border);
     border-radius: 18px;
     padding: 18px;
-    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(27, 27, 24, 0.05);
   }
 
   .hidden { display: none !important; }
@@ -296,13 +304,13 @@
     color: var(--text-dim);
     margin-bottom: 10px;
   }
-  .theme-indicator span { color: var(--cyan); }
+  .theme-indicator span { color: var(--accent); }
 
   .target-card {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: linear-gradient(135deg, rgba(0,243,255,0.10), rgba(255,215,0,0.06));
+    background: rgba(27, 27, 24, 0.03);
     border: 1px solid var(--panel-border);
     border-radius: 14px;
     padding: 14px 16px;
@@ -316,10 +324,12 @@
     color: var(--text-dim);
   }
   .target-word {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
   }
+  .target-word-bracket { color: var(--text-dim); }
+  .target-word-spaced { letter-spacing: 0.26em; padding: 0 0.12em; }
 
   .slider-row { margin-bottom: 14px; }
   .slider-row-head {
@@ -331,7 +341,7 @@
     color: var(--text);
   }
   .slider-value {
-    color: var(--cyan);
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
     font-weight: 700;
   }
@@ -342,7 +352,7 @@
     width: 100%;
     height: 4px;
     border-radius: 2px;
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(27, 27, 24, 0.12);
     outline: none;
   }
   .vslider::-webkit-slider-thumb {
@@ -350,22 +360,22 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px 2px rgba(0, 243, 255, 0.55);
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.18);
     cursor: pointer;
-    border: 2px solid #06181c;
+    border: 2px solid var(--bg);
   }
   .vslider::-moz-range-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px 2px rgba(0, 243, 255, 0.55);
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.18);
     cursor: pointer;
-    border: 2px solid #06181c;
+    border: 2px solid var(--bg);
   }
-  .vslider:disabled::-webkit-slider-thumb { background: #4a5568; box-shadow: none; }
-  .vslider:disabled { opacity: 0.5; }
+  .vslider:disabled::-webkit-slider-thumb { background: #b9b3a7; box-shadow: none; }
+  .vslider:disabled { opacity: 0.6; }
 
   #revealPanel {
     margin-top: 16px;
@@ -374,17 +384,15 @@
   }
   .rank-badge {
     display: inline-block;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    padding: 6px 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 6px 18px;
     border-radius: 8px;
     margin-bottom: 12px;
+    color: #fff;
   }
-  .rank-perfect { color: #241c00; background: linear-gradient(135deg, #FFD700, #ffe680); }
-  .rank-great { color: #06181c; background: linear-gradient(135deg, #00F3FF, #8bf9ff); }
-  .rank-ok { color: #241c00; background: #d9a441; }
-  .rank-miss { color: var(--text); background: #3a3f4a; }
   .reveal-score-row {
     display: flex;
     align-items: baseline;
@@ -394,7 +402,6 @@
   .reveal-score-row .big {
     font-size: 30px;
     font-weight: 900;
-    color: var(--gold);
   }
   .coord-row {
     display: flex;
@@ -420,17 +427,17 @@
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    background: rgba(255,255,255,0.04);
+    background: rgba(27, 27, 24, 0.03);
     border-radius: 8px;
     padding: 6px 10px;
   }
   .history-item .hi-word { display: flex; align-items: center; gap: 6px; }
-  .history-item .hi-score { font-weight: 700; color: var(--cyan); }
+  .history-item .hi-score { font-weight: 700; }
 
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(27, 27, 24, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -441,7 +448,7 @@
     width: 100%;
     max-width: 560px;
     max-height: 80vh;
-    background: #10141d;
+    background: #fff;
     border: 1px solid var(--panel-border);
     border-radius: 16px;
     padding: 20px;
@@ -454,8 +461,8 @@
     width: 100%;
     flex: 1;
     min-height: 220px;
-    background: #05070b;
-    color: #9be9c9;
+    background: var(--bg);
+    color: var(--text);
     border: 1px solid var(--panel-border);
     border-radius: 10px;
     padding: 10px;
@@ -521,7 +528,9 @@
             <div class="target-emoji" id="targetEmoji"></div>
             <div>
               <div class="target-label">Guess this word&rsquo;s vector</div>
-              <div class="target-word" id="targetWord"></div>
+              <div class="target-word">
+                <span class="target-word-bracket">[</span><span id="targetWordSpaced" class="target-word-spaced"></span><span class="target-word-bracket">]</span>
+              </div>
             </div>
           </div>
 
@@ -530,7 +539,7 @@
           <button id="submitBtn" class="primary-btn" type="button">Submit Vector</button>
 
           <div id="revealPanel" class="hidden">
-            <div class="rank-badge" id="rankBadge">GREAT!</div>
+            <div class="rank-badge" id="rankBadge">GREAT</div>
             <div class="reveal-score-row"><span class="big" id="revealScore">0%</span><span>match</span></div>
 
             <div class="coord-row"><span>Your vector</span><span id="revealYourVec">(0, 0, 0)</span></div>
@@ -573,6 +582,7 @@
   var AXIS_LEN = SCALE * 1.25;
   var DEMO_SCALE = 1.7;
   var DEMO_AXIS_LEN = DEMO_SCALE * 1.3;
+  var ACCENT_COLOR = 0x2F6FED;
 
   // --- math helpers -------------------------------------------------------
 
@@ -586,6 +596,12 @@
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
   function vecToWorld(v, scale) { return new THREE.Vector3(v[0] * scale, v[1] * scale, v[2] * scale); }
   function fmtVec(v) { return '(' + v.map(function (n) { return n.toFixed(2); }).join(', ') + ')'; }
+  function fmtVecLive(v) {
+    return '[ ' + v.map(function (n) {
+      var s = n.toFixed(2);
+      return (n >= 0 ? ' ' : '') + s;
+    }).join(', ') + ' ]';
+  }
   function sleep(ms, timerBag) {
     return new Promise(function (resolve) {
       timerBag.push(setTimeout(resolve, ms));
@@ -599,16 +615,26 @@
     return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   }
 
+  function lerpColor(hexA, hexB, t) {
+    var a = parseInt(hexA.slice(1), 16), b = parseInt(hexB.slice(1), 16);
+    var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+    var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+    var r = Math.round(ar + (br - ar) * t);
+    var g = Math.round(ag + (bg - ag) * t);
+    var bl = Math.round(ab + (bb - ab) * t);
+    return 'rgb(' + r + ', ' + g + ', ' + bl + ')';
+  }
+
   // --- game data ------------------------------------------------------------
   // "True" embeddings below are hand-authored to demonstrate the geometry
   // of each axis set; they are not pulled from a real trained model.
 
   var DEMO_AXES = ['Masculinity', 'Power', 'Maturity'];
   var DEMO_WORDS = [
-    { varName: 'king', label: 'King', emoji: '👑', vec: [0.85, 0.95, 0.90] },
-    { varName: 'queen', label: 'Queen', emoji: '👑', vec: [-0.85, 0.90, 0.90] },
-    { varName: 'prince', label: 'Prince', emoji: '🤴', vec: [0.80, 0.35, -0.60] },
-    { varName: 'princess', label: 'Princess', emoji: '👸', vec: [-0.80, 0.30, -0.60] },
+    { varName: 'king', label: 'King', emoji: '👑', color: '#D4A017', vec: [0.85, 0.95, 0.90] },
+    { varName: 'queen', label: 'Queen', emoji: '👑', color: '#9C6ADE', vec: [-0.85, 0.90, 0.90] },
+    { varName: 'prince', label: 'Prince', emoji: '🤴', color: '#4C6EF5', vec: [0.80, 0.35, -0.60] },
+    { varName: 'princess', label: 'Princess', emoji: '👸', color: '#F06292', vec: [-0.80, 0.30, -0.60] },
   ];
 
   var THEMES = [
@@ -616,60 +642,50 @@
       name: 'Produce',
       axes: ['Sweetness', 'Redness', 'Crunchiness'],
       words: [
-        { label: 'Apple', emoji: '🍎', vec: [0.60, 0.80, 0.55] },
-        { label: 'Banana', emoji: '🍌', vec: [0.85, -0.75, -0.55] },
-        { label: 'Watermelon', emoji: '🍉', vec: [0.50, 0.45, 0.25] },
-        { label: 'Grape', emoji: '🍇', vec: [0.45, -0.25, -0.20] },
-        { label: 'Lemon', emoji: '🍋', vec: [-0.75, -0.55, 0.05] },
+        { label: 'Apple', emoji: '🍎', color: '#D62828', vec: [0.60, 0.80, 0.55] },
+        { label: 'Banana', emoji: '🍌', color: '#E8B923', vec: [0.85, -0.75, -0.55] },
+        { label: 'Watermelon', emoji: '🍉', color: '#2F9E44', vec: [0.50, 0.45, 0.25] },
+        { label: 'Grape', emoji: '🍇', color: '#6F42C1', vec: [0.45, -0.25, -0.20] },
+        { label: 'Lemon', emoji: '🍋', color: '#F1C40F', vec: [-0.75, -0.55, 0.05] },
       ],
     },
     {
       name: 'Wildlife',
       axes: ['Size', 'Ferocity', 'Domesticated'],
       words: [
-        { label: 'Tiger', emoji: '🐯', vec: [0.85, 0.85, -0.85] },
-        { label: 'Wolf', emoji: '🐺', vec: [0.60, 0.80, -0.70] },
-        { label: 'House Cat', emoji: '🐱', vec: [-0.80, -0.90, 0.90] },
-        { label: 'Rabbit', emoji: '🐰', vec: [-0.85, -0.60, 0.60] },
-        { label: 'Elephant', emoji: '🐘', vec: [0.95, -0.30, 0.10] },
+        { label: 'Tiger', emoji: '🐯', color: '#E8590C', vec: [0.85, 0.85, -0.85] },
+        { label: 'Wolf', emoji: '🐺', color: '#6C757D', vec: [0.60, 0.80, -0.70] },
+        { label: 'House Cat', emoji: '🐱', color: '#B5651D', vec: [-0.80, -0.90, 0.90] },
+        { label: 'Rabbit', emoji: '🐰', color: '#F06292', vec: [-0.85, -0.60, 0.60] },
+        { label: 'Elephant', emoji: '🐘', color: '#7D8491', vec: [0.95, -0.30, 0.10] },
       ],
     },
     {
       name: 'Tech',
       axes: ['Portability', 'Screen Size', 'Processing Power'],
       words: [
-        { label: 'Smartphone', emoji: '📱', vec: [0.80, -0.20, 0.60] },
-        { label: 'Desktop PC', emoji: '🖥️', vec: [-0.90, 0.90, 0.90] },
-        { label: 'Smartwatch', emoji: '⌚', vec: [0.95, -0.90, -0.60] },
-        { label: 'Laptop', emoji: '💻', vec: [0.30, 0.30, 0.50] },
-        { label: 'Game Console', emoji: '🎮', vec: [0.10, -0.30, 0.70] },
+        { label: 'Smartphone', emoji: '📱', color: '#1971C2', vec: [0.80, -0.20, 0.60] },
+        { label: 'Desktop PC', emoji: '🖥️', color: '#495057', vec: [-0.90, 0.90, 0.90] },
+        { label: 'Smartwatch', emoji: '⌚', color: '#0CA678', vec: [0.95, -0.90, -0.60] },
+        { label: 'Laptop', emoji: '💻', color: '#868E96', vec: [0.30, 0.30, 0.50] },
+        { label: 'Game Console', emoji: '🎮', color: '#7048E8', vec: [0.10, -0.30, 0.70] },
       ],
     },
   ];
 
-  function getVerdict(cos) {
-    var pct = Math.max(0, cos) * 100;
-    if (pct >= 90) return { rank: 'PERFECT', cls: 'rank-perfect' };
-    if (pct >= 70) return { rank: 'GREAT', cls: 'rank-great' };
-    if (pct >= 40) return { rank: 'OK', cls: 'rank-ok' };
-    return { rank: 'MISS', cls: 'rank-miss' };
+  // Stricter tiers: within ~15% match is PERFECT, matching the requested
+  // "close by 15 percent = perfect" scale, cascading down from there.
+  function getVerdict(score) {
+    if (score >= 85) return 'PERFECT';
+    if (score >= 65) return 'GREAT';
+    if (score >= 35) return 'OK';
+    return 'MISS';
+  }
+  function scoreColor(score) {
+    return lerpColor('#c23b2b', '#1f7a4d', clamp(score / 100, 0, 1));
   }
 
   // --- shared visual helpers -------------------------------------------------
-
-  function makeGlowTexture(rgb) {
-    var size = 128;
-    var c = document.createElement('canvas');
-    c.width = c.height = size;
-    var ctx = c.getContext('2d');
-    var grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-    grad.addColorStop(0, 'rgba(' + rgb + ',0.9)');
-    grad.addColorStop(0.4, 'rgba(' + rgb + ',0.35)');
-    grad.addColorStop(1, 'rgba(' + rgb + ',0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    return new THREE.CanvasTexture(c);
-  }
 
   var emojiTextureCache = {};
   function makeEmojiTexture(emoji) {
@@ -708,7 +724,7 @@
 
   function makeGuessRing(size) {
     var geom = new THREE.RingGeometry(size * 0.62, size * 0.68, 32);
-    var mat = new THREE.MeshBasicMaterial({ color: 0x00F3FF, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
+    var mat = new THREE.MeshBasicMaterial({ color: ACCENT_COLOR, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false });
     return new THREE.Mesh(geom, mat);
   }
 
@@ -729,10 +745,10 @@
     dirs.forEach(function (dir) {
       var pts = [dir.clone().multiplyScalar(-axisLen), dir.clone().multiplyScalar(axisLen)];
       var geom = new THREE.BufferGeometry().setFromPoints(pts);
-      var mat = new THREE.LineBasicMaterial({ color: 0x3a4152, transparent: true, opacity: 0.55 });
+      var mat = new THREE.LineBasicMaterial({ color: 0xC9C2B4, transparent: true, opacity: 0.7 });
       group.add(new THREE.Line(geom, mat));
     });
-    var grid = new THREE.GridHelper(axisLen * 2, 10, 0x232a3a, 0x181e2b);
+    var grid = new THREE.GridHelper(axisLen * 2, 10, 0xDCD6C8, 0xE8E3D6);
     grid.position.y = -axisLen;
     group.add(grid);
     scene.add(group);
@@ -757,16 +773,14 @@
   var guessVec = [0, 0, 0];
   var wordSubmitted = false;
   var allGuessRings = [];
-  function trackGuessRing(ring) { allGuessRings.push(ring); }
-  function clearGuessRings() { allGuessRings = []; }
+  var guessSprite, guessRing, guessLine, guessVectorLabelEntry;
 
   function initMainScene() {
     canvasContainer = document.getElementById('canvasContainer');
     canvasEl = document.getElementById('glcanvas');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0B0E14);
-    scene.fog = new THREE.FogExp2(0x0B0E14, 0.035);
+    scene.background = new THREE.Color(0xF7F4EE);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     updateCameraPosition();
@@ -774,14 +788,6 @@
     renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     resizeRenderer();
-
-    scene.add(new THREE.AmbientLight(0x8899aa, 0.65));
-    var cyanLight = new THREE.PointLight(0x00f3ff, 1.2, 24);
-    cyanLight.position.set(3, 3, 3);
-    scene.add(cyanLight);
-    var goldLight = new THREE.PointLight(0xffd700, 0.75, 24);
-    goldLight.position.set(-3, -2, 4);
-    scene.add(goldLight);
 
     buildAxesInto(scene, AXIS_LEN);
     buildAxisLabels();
@@ -871,7 +877,7 @@
   }
 
   function buildParticles() {
-    var count = 220;
+    var count = 180;
     var positions = new Float32Array(count * 3);
     for (var i = 0; i < count; i++) {
       var r = 6 + Math.random() * 6;
@@ -883,7 +889,7 @@
     }
     var geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    var mat = new THREE.PointsMaterial({ color: 0x2c3550, size: 0.035, transparent: true, opacity: 0.75, sizeAttenuation: true });
+    var mat = new THREE.PointsMaterial({ color: 0xD8D2C4, size: 0.035, transparent: true, opacity: 0.8, sizeAttenuation: true });
     particles = new THREE.Points(geom, mat);
     scene.add(particles);
   }
@@ -906,6 +912,7 @@
       return true;
     });
     removeLabelsByGroup(group);
+    allGuessRings = allGuessRings.filter(function (ring) { return meshRegistry.some(function (e) { return e.mesh === ring; }); });
   }
 
   function updateLabels() {
@@ -938,18 +945,14 @@
     renderer.render(scene, camera);
   }
 
-  function buildArc(fromVec3, toVec3) {
+  function buildArc(fromVec3, toVec3, colorA, colorB) {
     var mid = fromVec3.clone().add(toVec3).multiplyScalar(0.5);
     mid.y += 0.9;
     var curve = new THREE.QuadraticBezierCurve3(fromVec3, mid, toVec3);
-    var geomCore = new THREE.TubeGeometry(curve, 40, 0.018, 8, false);
-    var geomHalo = new THREE.TubeGeometry(curve, 40, 0.05, 8, false);
-    colorizeTubeAlongLength(geomCore, 0x00F3FF, 0xFFD700);
-    colorizeTubeAlongLength(geomHalo, 0x00F3FF, 0xFFD700);
-    var core = new THREE.Mesh(geomCore, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
-    var halo = new THREE.Mesh(geomHalo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
-    addMesh(core, 'game');
-    addMesh(halo, 'game');
+    var geom = new THREE.TubeGeometry(curve, 40, 0.02, 8, false);
+    colorizeTubeAlongLength(geom, colorA, colorB);
+    var mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false }));
+    addMesh(mesh, 'game');
   }
 
   function dropInWithBounce(obj, targetPos, duration, onComplete) {
@@ -972,10 +975,7 @@
   // --- theme / word flow -----------------------------------------------------
 
   function startTheme(themeIndex) {
-    removeGroup('game');
-    clearGuessRings();
     currentThemeIndex = themeIndex;
-    currentWordIndex = 0;
     var theme = THEMES[currentThemeIndex];
     setAxisLabelsText(theme.axes);
     document.getElementById('themeName').textContent = theme.name;
@@ -985,6 +985,7 @@
   }
 
   function loadWord(wordIndex) {
+    removeGroup('game');
     currentWordIndex = wordIndex;
     wordSubmitted = false;
     guessVec = [0, 0, 0];
@@ -992,11 +993,36 @@
     var word = theme.words[wordIndex % theme.words.length];
 
     document.getElementById('targetEmoji').textContent = word.emoji;
-    document.getElementById('targetWord').textContent = word.label;
+    var wordEl = document.getElementById('targetWordSpaced');
+    wordEl.textContent = word.label.toUpperCase();
+    wordEl.style.color = word.color;
+
+    var origin = new THREE.Vector3(0, 0, 0);
+    guessSprite = makeEmojiSprite(word.emoji, 0.55, 0.85);
+    guessSprite.position.copy(origin);
+    addMesh(guessSprite, 'game');
+
+    guessRing = makeGuessRing(0.55);
+    guessRing.position.copy(origin);
+    addMesh(guessRing, 'game');
+    allGuessRings.push(guessRing);
+
+    guessLine = makeOriginLine(origin, ACCENT_COLOR, 0.5);
+    addMesh(guessLine, 'game');
+
+    guessVectorLabelEntry = addLabel(function () { return guessSprite.position; }, fmtVecLive(guessVec), 'game', 'guess-vector-label vlabel-below');
 
     renderControlPanelForWord(theme, word, wordIndex);
     document.getElementById('revealPanel').classList.add('hidden');
     enableSliders();
+  }
+
+  function updateGuessVisual() {
+    var tip = vecToWorld(guessVec, SCALE);
+    guessSprite.position.copy(tip);
+    guessRing.position.copy(tip);
+    guessLine.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), tip]);
+    guessVectorLabelEntry.text = fmtVecLive(guessVec);
   }
 
   function renderControlPanelForWord(theme, word, wordIndex) {
@@ -1014,6 +1040,7 @@
       document.getElementById('slider' + i).addEventListener('input', function (e) {
         guessVec[i] = parseFloat(e.target.value);
         document.getElementById('sliderVal' + i).textContent = guessVec[i].toFixed(2);
+        updateGuessVisual();
       });
     });
   }
@@ -1037,56 +1064,32 @@
     var cos = cosineSimilarity(guessVec, word.vec);
     var score = Math.round(Math.max(0, cos) * 100);
 
-    var guessPos = vecToWorld(guessVec, SCALE);
+    var guessTip = guessSprite.position.clone();
     var truePos = vecToWorld(word.vec, SCALE);
-
-    var guessGlowTex = makeGlowTexture('0,243,255');
-    var guessGlowMat = new THREE.SpriteMaterial({ map: guessGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    var guessGlow = new THREE.Sprite(guessGlowMat);
-    guessGlow.scale.set(0.9, 0.9, 0.9);
-    guessGlow.position.copy(guessPos);
-    addMesh(guessGlow, 'game');
-
-    var guessSprite = makeEmojiSprite(word.emoji, 0.55, 0.55);
-    guessSprite.position.copy(guessPos);
-    addMesh(guessSprite, 'game');
-
-    var guessRing = makeGuessRing(0.55);
-    guessRing.position.copy(guessPos);
-    addMesh(guessRing, 'game');
-    trackGuessRing(guessRing);
-
-    addMesh(makeOriginLine(guessPos, 0x00F3FF, 0.35), 'game');
-
-    var guessTip = guessPos.clone();
-
-    var trueGlowTex = makeGlowTexture('255,215,0');
-    var trueGlowMat = new THREE.SpriteMaterial({ map: trueGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    var trueGlow = new THREE.Sprite(trueGlowMat);
-    trueGlow.scale.set(1.0, 1.0, 1.0);
-    trueGlow.position.copy(truePos);
-    addMesh(trueGlow, 'game');
+    var wordColorNum = parseInt(word.color.slice(1), 16);
 
     var trueSprite = makeEmojiSprite(word.emoji, 0.6, 1);
     trueSprite.userData.baseScale = 0.6;
     addMesh(trueSprite, 'game');
-    addLabel(function () { return trueSprite.position; }, word.label, 'game', 'vlabel-target');
-    addMesh(makeOriginLine(truePos, 0xFFD700, 0.45), 'game');
+    var trueLabel = addLabel(function () { return trueSprite.position; }, word.label, 'game', 'vlabel-target');
+    trueLabel.el.style.color = word.color;
+    addMesh(makeOriginLine(truePos, wordColorNum, 0.5), 'game');
 
     dropInWithBounce(trueSprite, truePos, 900, function () {
-      buildArc(guessTip, truePos);
+      buildArc(guessTip, truePos, ACCENT_COLOR, wordColorNum);
     });
 
-    buildRevealContent(word, score, cos);
+    buildRevealContent(word, score);
     pushHistory(word, score);
   }
 
-  function buildRevealContent(word, score, cos) {
-    var verdict = getVerdict(cos);
+  function buildRevealContent(word, score) {
+    var color = scoreColor(score);
     var badge = document.getElementById('rankBadge');
-    badge.textContent = verdict.rank;
-    badge.className = 'rank-badge ' + verdict.cls;
+    badge.textContent = getVerdict(score);
+    badge.style.background = color;
     document.getElementById('revealScore').textContent = score + '%';
+    document.getElementById('revealScore').style.color = color;
     document.getElementById('revealYourVec').textContent = fmtVec(guessVec);
     document.getElementById('revealTrueVec').textContent = fmtVec(word.vec);
     document.getElementById('submitBtn').classList.add('hidden');
@@ -1099,7 +1102,7 @@
     var list = document.getElementById('historyList');
     var item = document.createElement('div');
     item.className = 'history-item';
-    item.innerHTML = '<span class="hi-word">' + word.emoji + ' ' + word.label + '</span><span class="hi-score">' + score + '%</span>';
+    item.innerHTML = '<span class="hi-word">' + word.emoji + ' ' + word.label + '</span><span class="hi-score" style="color:' + scoreColor(score) + '">' + score + '%</span>';
     list.appendChild(item);
     list.scrollTop = list.scrollHeight;
   }
@@ -1132,18 +1135,13 @@
     demoCanvasEl = document.getElementById('demoCanvas');
 
     demoScene = new THREE.Scene();
-    demoScene.background = new THREE.Color(0x0B0E14);
+    demoScene.background = new THREE.Color(0xFFFFFF);
 
     demoCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
 
     demoRenderer = new THREE.WebGLRenderer({ canvas: demoCanvasEl, antialias: true });
     demoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     resizeDemoRenderer();
-
-    demoScene.add(new THREE.AmbientLight(0x8899aa, 0.8));
-    var pl = new THREE.PointLight(0x00f3ff, 1.0, 20);
-    pl.position.set(2, 2, 2);
-    demoScene.add(pl);
 
     buildAxesInto(demoScene, DEMO_AXIS_LEN);
     buildDemoAxisLabels();
@@ -1233,12 +1231,13 @@
     demoScene.add(sprite);
     demoMeshes.push(sprite);
 
-    var line = makeOriginLine(pos, 0x00F3FF, 0);
+    var line = makeOriginLine(pos, parseInt(word.color.slice(1), 16), 0);
     demoScene.add(line);
     demoMeshes.push(line);
 
     var labelEl = makeDemoLabelEl('demo-word-label');
     labelEl.textContent = word.label;
+    labelEl.style.color = word.color;
     labelEl.style.opacity = '0';
     demoLabels.push({ getPos: function () { return sprite.position; }, el: labelEl, isAxis: false });
 
@@ -1249,7 +1248,7 @@
       var eased = Math.max(0, easeOutElastic(t));
       sprite.material.opacity = Math.min(1, eased);
       sprite.scale.setScalar(0.5 * Math.min(1.15, Math.max(0.001, eased)));
-      line.material.opacity = Math.min(0.45, eased * 0.45);
+      line.material.opacity = Math.min(0.55, eased * 0.55);
       labelEl.style.opacity = String(Math.min(1, eased));
       if (t < 1) requestAnimationFrame(tick);
     }
