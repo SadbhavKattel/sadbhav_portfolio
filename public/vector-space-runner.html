@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Vector Space Runner: Multi-Word Cluster Edition</title>
+<title>Words to Vectors</title>
 <style>
   :root {
     --bg: #0B0E14;
@@ -60,38 +60,9 @@
     flex-shrink: 0;
   }
 
-  .brand-sub {
-    font-weight: 500;
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .score-chip {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    font-size: 12px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .score-chip strong {
+  .brand-arrow {
     color: var(--cyan);
-    font-size: 15px;
-    font-weight: 800;
+    font-weight: 500;
   }
 
   button {
@@ -129,6 +100,11 @@
   }
   .primary-btn:hover { transform: translateY(-1px); }
   .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .secondary-btn {
+    background: linear-gradient(135deg, #FFD700, #cf9e00);
+    color: #241c00;
+  }
 
   #stage {
     display: flex;
@@ -175,11 +151,6 @@
     color: #F2F5F9;
     backdrop-filter: blur(2px);
   }
-  .player-label {
-    background: rgba(0, 243, 255, 0.14);
-    border: 1px solid rgba(0, 243, 255, 0.55);
-    color: var(--cyan);
-  }
   .vlabel-target {
     background: rgba(255, 215, 0, 0.16);
     border: 1px solid rgba(255, 215, 0, 0.6);
@@ -195,47 +166,91 @@
     padding: 0;
   }
 
-  #tutorialProgressTrack {
+  /* --- demo widget --- */
+  #demoWindow {
     position: absolute;
-    left: 14px;
-    right: 14px;
+    left: 12px;
     top: 12px;
-    height: 3px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, 0.12);
+    width: min(258px, 68vw);
+    z-index: 20;
+    background: rgba(10, 13, 20, 0.88);
+    border: 1px solid rgba(0, 243, 255, 0.28);
+    border-radius: 14px;
+    padding: 10px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  }
+  .demo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .demo-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+  .demo-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 4px;
+  }
+  .demo-close-btn:hover { color: var(--text); }
+  #demoCode {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 9.5px;
+    line-height: 1.6;
+    color: #9be9c9;
+    min-height: 64px;
+    white-space: pre;
     overflow: hidden;
   }
-  #tutorialProgressFill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--cyan), var(--gold));
+  .code-line { white-space: pre; }
+  #demoCanvasWrap { position: relative; width: 100%; height: 130px; margin-top: 4px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.03); }
+  #demoCanvas { display: block; width: 100%; height: 100%; }
+  #demoLabelLayer { position: absolute; inset: 0; pointer-events: none; }
+  .demo-axis-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+  .demo-word-label {
+    position: absolute;
+    transform: translate(-50%, -130%);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
   }
 
-  #phaseOverlay {
+  #demoPill {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 16px;
-    display: flex;
-    justify-content: center;
-    padding: 0 16px;
-    pointer-events: none;
+    left: 12px;
+    top: 12px;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(10, 13, 20, 0.88);
+    border: 1px solid rgba(0, 243, 255, 0.4);
+    color: var(--cyan);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  #phaseOverlayText {
-    max-width: 92%;
-    text-align: center;
-    font-size: clamp(12px, 2.2vw, 15px);
-    font-weight: 600;
-    color: var(--text);
-    background: rgba(11, 14, 20, 0.55);
-    border: 1px solid var(--panel-border);
-    padding: 8px 16px;
-    border-radius: 12px;
-    backdrop-filter: blur(4px);
-    opacity: 0;
-    transition: opacity 400ms ease;
-  }
-  #phaseOverlayText.show { opacity: 1; }
+  #demoPill:hover { border-color: var(--cyan); }
 
   #controlPane {
     width: 100%;
@@ -243,8 +258,14 @@
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
-    max-height: 520px;
+    max-height: 620px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 243, 255, 0.35) transparent;
   }
+  #controlPane::-webkit-scrollbar { width: 6px; }
+  #controlPane::-webkit-scrollbar-track { background: transparent; }
+  #controlPane::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 999px; }
+  #controlPane::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.5); }
 
   .panel {
     background: var(--panel);
@@ -256,27 +277,7 @@
 
   .hidden { display: none !important; }
 
-  #tutorialPanel h2 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 800;
-  }
-  #tutorialPanel p {
-    margin: 0 0 14px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--text-dim);
-  }
-  #tutorialCaption {
-    font-size: 12px;
-    color: var(--cyan);
-    font-weight: 600;
-    min-height: 32px;
-    margin-bottom: 14px;
-    line-height: 1.5;
-  }
-
-  .round-indicator {
+  .theme-indicator {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -284,18 +285,19 @@
     color: var(--text-dim);
     margin-bottom: 10px;
   }
-  .round-indicator span { color: var(--cyan); }
+  .theme-indicator span { color: var(--cyan); }
 
   .target-card {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     background: linear-gradient(135deg, rgba(0,243,255,0.10), rgba(255,215,0,0.06));
     border: 1px solid var(--panel-border);
     border-radius: 14px;
     padding: 14px 16px;
     margin-bottom: 16px;
   }
+  .target-emoji { font-size: 34px; line-height: 1; }
   .target-label {
     font-size: 11px;
     text-transform: uppercase;
@@ -354,6 +356,25 @@
   .vslider:disabled::-webkit-slider-thumb { background: #4a5568; box-shadow: none; }
   .vslider:disabled { opacity: 0.5; }
 
+  .live-vector { margin-top: 4px; margin-bottom: 4px; }
+  .live-vector-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .live-vector-code {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    background: rgba(0, 243, 255, 0.06);
+    border: 1px solid rgba(0, 243, 255, 0.18);
+    border-radius: 8px;
+    padding: 8px 10px;
+    letter-spacing: 0.01em;
+  }
+
   .live-sim { margin-top: 18px; margin-bottom: 16px; }
   .live-sim-label {
     font-size: 11px;
@@ -378,34 +399,31 @@
     background: #c23b2b;
     transition: width 120ms ease, background 200ms ease;
   }
-  .meter-value {
-    text-align: right;
-    font-size: 12px;
-    font-weight: 700;
-    margin-top: 4px;
-    color: var(--text-dim);
-  }
 
   #revealPanel {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px dashed var(--panel-border);
   }
+  .verdict-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .verdict-emoji { font-size: 22px; }
   .reveal-score-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
   }
   .reveal-score-row .big {
     font-size: 30px;
     font-weight: 900;
     color: var(--gold);
-  }
-  .reveal-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 12px;
   }
   .coord-row {
     display: flex;
@@ -416,60 +434,27 @@
     font-variant-numeric: tabular-nums;
   }
   .coord-row span:last-child { color: var(--text); }
-  .dist-block { margin: 12px 0; }
-  .dist-block-title {
+
+  #historyPanel { margin-top: 6px; }
+  .history-title {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--text-dim);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
-  .dist-row {
+  .history-list { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; }
+  .history-item {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    padding: 4px 0;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 6px 10px;
   }
-  .insight-box {
-    font-size: 12px;
-    line-height: 1.55;
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.04);
-    border-left: 2px solid var(--cyan);
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin: 12px 0 16px;
-  }
-
-  #finalPanel { text-align: center; }
-  #finalPanel .rank {
-    font-size: 26px;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--cyan), var(--gold));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin: 6px 0 2px;
-  }
-  #finalPanel .score-big {
-    font-size: 15px;
-    color: var(--text-dim);
-    margin-bottom: 18px;
-  }
-  #finalPanel .final-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .text-link {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 12px;
-    text-decoration: underline;
-    padding: 4px;
-  }
-  .text-link:hover { color: var(--cyan); }
+  .history-item .hi-word { display: flex; align-items: center; gap: 6px; }
+  .history-item .hi-score { font-weight: 700; color: var(--cyan); }
 
   .modal-backdrop {
     position: fixed;
@@ -514,11 +499,13 @@
   }
   .modal-actions .ghost-btn, .modal-actions .primary-btn { width: auto; flex: 1; }
 
+  #resetRow { display: flex; justify-content: center; }
+
   @media (min-width: 860px) {
-    #stage { flex-direction: row; height: 620px; }
+    #stage { flex: 0 0 auto; flex-direction: row; height: 660px; min-height: 0; }
     #canvasPane { flex: 0 0 60%; height: 100%; }
     #canvasContainer { height: 100%; }
-    #controlPane { flex: 0 0 40%; height: 100%; max-height: none; }
+    #controlPane { flex: 0 0 40%; height: 100%; max-height: none; min-height: 0; }
   }
 </style>
 </head>
@@ -527,11 +514,9 @@
     <header id="topbar">
       <div class="brand">
         <span class="brand-dot"></span>
-        Vector Space Runner
-        <span class="brand-sub">Multi-Word Cluster Edition</span>
+        Words <span class="brand-arrow">&rarr;</span> Vectors
       </div>
       <div class="topbar-right">
-        <div class="score-chip">Score&nbsp;<strong id="scoreValue">0</strong>&nbsp;/&nbsp;300</div>
         <button id="exportBtn" class="ghost-btn" type="button">Export</button>
       </div>
     </header>
@@ -541,29 +526,40 @@
         <div id="canvasContainer">
           <canvas id="glcanvas"></canvas>
           <div id="labelLayer"></div>
-          <div id="tutorialProgressTrack"><div id="tutorialProgressFill"></div></div>
-          <div id="phaseOverlay"><div id="phaseOverlayText"></div></div>
+
+          <div id="demoWindow">
+            <div class="demo-header">
+              <span class="demo-title">Embeddings Demo</span>
+              <button id="demoCloseBtn" class="demo-close-btn" type="button">&times;</button>
+            </div>
+            <div id="demoCode"></div>
+            <div id="demoCanvasWrap">
+              <canvas id="demoCanvas"></canvas>
+              <div id="demoLabelLayer"></div>
+            </div>
+          </div>
+
+          <button id="demoPill" type="button">&#9654; Watch Demo</button>
         </div>
       </section>
 
       <aside id="controlPane">
-        <div id="tutorialPanel" class="panel">
-          <h2>How Word Embeddings Work</h2>
-          <p>Every word lives as a point in a multi-dimensional feature space. Words with similar meaning land near each other, and relationships between words become vector arithmetic.</p>
-          <div id="tutorialCaption"></div>
-          <button id="skipTutorialBtn" class="ghost-btn" type="button" style="width: 100%;">Skip Intro</button>
-        </div>
-
-        <div id="gamePanel" class="panel hidden">
-          <div class="round-indicator">Round <span id="roundNum">1</span> / 3 &mdash; <span id="roundName"></span></div>
+        <div id="gamePanel" class="panel">
+          <div class="theme-indicator"><span id="themeName"></span> Cluster</div>
           <div class="target-card">
+            <div class="target-emoji" id="targetEmoji"></div>
             <div>
-              <div class="target-label">Plot this word</div>
+              <div class="target-label">Guess this word&rsquo;s vector</div>
               <div class="target-word" id="targetWord"></div>
             </div>
           </div>
 
           <div id="slidersContainer"></div>
+
+          <div class="live-vector">
+            <div class="live-vector-label">Your Vector</div>
+            <div class="live-vector-code" id="liveVectorCode">[ 0.00,  0.00,  0.00 ]</div>
+          </div>
 
           <div class="live-sim">
             <div class="live-sim-label"><span>Live Similarity</span><span id="liveMeterValue">0%</span></div>
@@ -573,31 +569,23 @@
           <button id="submitBtn" class="primary-btn" type="button">Submit Vector</button>
 
           <div id="revealPanel" class="hidden">
-            <div class="reveal-score-row"><span class="big" id="revealScore">0</span><span>/ 100 this round</span></div>
-            <div class="reveal-sub">Angular distance to true vector: <strong id="revealAngle">0&deg;</strong></div>
+            <div class="verdict-row"><span class="verdict-emoji" id="verdictEmoji">&#128077;</span><span id="verdictText">Good guess!</span></div>
+            <div class="reveal-score-row"><span class="big" id="revealScore">0%</span><span>cosine similarity</span></div>
 
             <div class="coord-row"><span>Your vector</span><span id="revealYourVec">(0, 0, 0)</span></div>
             <div class="coord-row"><span>True vector</span><span id="revealTrueVec">(0, 0, 0)</span></div>
 
-            <div class="dist-block">
-              <div class="dist-block-title">Your distance to reference words</div>
-              <div id="revealDistances"></div>
-            </div>
+            <button id="nextWordBtn" class="primary-btn secondary-btn" type="button" style="margin-top: 14px;">Try Another Word</button>
+          </div>
 
-            <div class="insight-box" id="revealInsight"></div>
-
-            <button id="nextRoundBtn" class="primary-btn" type="button">Next Round</button>
+          <div id="historyPanel" class="hidden">
+            <div class="history-title">This Session</div>
+            <div class="history-list" id="historyList"></div>
           </div>
         </div>
 
-        <div id="finalPanel" class="panel hidden">
-          <div class="target-label">Final Score</div>
-          <div class="score-big"><span id="finalScore">0</span> / 300</div>
-          <div class="rank" id="finalRank">Vector Master</div>
-          <div class="final-actions">
-            <button id="playAgainBtn" class="primary-btn" type="button">Play Again</button>
-            <button id="replayTutorialBtn" class="text-link" type="button">Replay Intro</button>
-          </div>
+        <div id="resetRow">
+          <button id="resetBtn" class="ghost-btn" type="button">Reset Graph &amp; Shuffle Theme</button>
         </div>
       </aside>
     </main>
@@ -622,6 +610,8 @@
 
   var SCALE = 2.6;
   var AXIS_LEN = SCALE * 1.25;
+  var DEMO_SCALE = 1.7;
+  var DEMO_AXIS_LEN = DEMO_SCALE * 1.3;
 
   // --- math helpers -------------------------------------------------------
 
@@ -632,13 +622,14 @@
     if (ma < 1e-6 || mb < 1e-6) return 0;
     return dot(a, b) / (ma * mb);
   }
-  function euclidean(a, b) {
-    var dx = a[0] - b[0], dy = a[1] - b[1], dz = a[2] - b[2];
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-  }
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-  function vecToWorld(v) { return new THREE.Vector3(v[0] * SCALE, v[1] * SCALE, v[2] * SCALE); }
+  function vecToWorld(v, scale) { return new THREE.Vector3(v[0] * scale, v[1] * scale, v[2] * scale); }
   function fmtVec(v) { return '(' + v.map(function (n) { return n.toFixed(2); }).join(', ') + ')'; }
+  function sleep(ms, timerBag) {
+    return new Promise(function (resolve) {
+      timerBag.push(setTimeout(resolve, ms));
+    });
+  }
 
   function easeOutElastic(t) {
     if (t === 0) return 0;
@@ -646,7 +637,6 @@
     var c4 = (2 * Math.PI) / 3;
     return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
   }
-  function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
   function lerpColor(hexA, hexB, t) {
     var a = parseInt(hexA.slice(1), 16), b = parseInt(hexB.slice(1), 16);
     var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
@@ -659,50 +649,145 @@
 
   // --- game data ------------------------------------------------------------
   // "True" embeddings below are hand-authored to demonstrate the geometry
-  // described in each round's insight; they are not pulled from a real model.
+  // of each axis set; they are not pulled from a real trained model.
 
-  var TUTORIAL_POINTS = [
-    { label: 'King', vec: [0.9, 0.8, 0.85] },
-    { label: 'Man', vec: [-0.2, 0.9, 0.3] },
-    { label: 'Woman', vec: [-0.2, -0.9, 0.3] },
+  var DEMO_AXES = ['Masculinity', 'Power', 'Maturity'];
+  var DEMO_WORDS = [
+    { varName: 'king', label: 'King', emoji: '👑', vec: [0.85, 0.95, 0.90] },
+    { varName: 'queen', label: 'Queen', emoji: '👑', vec: [-0.85, 0.90, 0.90] },
+    { varName: 'prince', label: 'Prince', emoji: '🤴', vec: [0.80, 0.35, -0.60] },
+    { varName: 'princess', label: 'Princess', emoji: '👸', vec: [-0.80, 0.30, -0.60] },
   ];
-  // Queen = King - Man + Woman, clamped to [-1, 1] per axis.
-  var QUEEN_VEC = [0.9, -0.95, 0.85];
 
-  var ROUNDS = [
+  var THEMES = [
     {
-      name: 'Produce Cluster',
+      name: 'Produce',
       axes: ['Sweetness', 'Redness', 'Crunchiness'],
-      references: [
-        { label: 'Banana', vec: [0.9, -0.8, 0.4] },
-        { label: 'Tomato', vec: [0.3, 0.9, 0.2] },
+      words: [
+        { label: 'Apple', emoji: '🍎', vec: [0.60, 0.80, 0.55] },
+        { label: 'Banana', emoji: '🍌', vec: [0.85, -0.75, -0.55] },
+        { label: 'Watermelon', emoji: '🍉', vec: [0.50, 0.45, 0.25] },
+        { label: 'Grape', emoji: '🍇', vec: [0.45, -0.25, -0.20] },
+        { label: 'Lemon', emoji: '🍋', vec: [-0.75, -0.55, 0.05] },
       ],
-      target: { label: 'Apple', vec: [0.6, 0.8, 0.45] },
-      insight: 'Apple sits close to Banana on Sweetness and Crunchiness, but drifts toward Tomato on Redness.',
     },
     {
-      name: 'Wildlife Cluster',
+      name: 'Wildlife',
       axes: ['Size', 'Ferocity', 'Domesticated'],
-      references: [
-        { label: 'House Cat', vec: [-0.8, -0.9, 0.9] },
-        { label: 'Wolf', vec: [0.6, 0.8, -0.7] },
+      words: [
+        { label: 'Tiger', emoji: '🐯', vec: [0.85, 0.85, -0.85] },
+        { label: 'Wolf', emoji: '🐺', vec: [0.60, 0.80, -0.70] },
+        { label: 'House Cat', emoji: '🐱', vec: [-0.80, -0.90, 0.90] },
+        { label: 'Rabbit', emoji: '🐰', vec: [-0.85, -0.60, 0.60] },
+        { label: 'Elephant', emoji: '🐘', vec: [0.95, -0.30, 0.10] },
       ],
-      target: { label: 'Tiger', vec: [0.85, 0.85, -0.85] },
-      insight: 'Tiger shares Wolf’s high Ferocity and low Domestication, while its size and feline build echo the House Cat.',
     },
     {
-      name: 'Tech Cluster',
+      name: 'Tech',
       axes: ['Portability', 'Screen Size', 'Processing Power'],
-      references: [
-        { label: 'Smartphone', vec: [0.8, -0.2, 0.6] },
-        { label: 'Desktop PC', vec: [-0.9, 0.9, 0.9] },
+      words: [
+        { label: 'Smartphone', emoji: '📱', vec: [0.80, -0.20, 0.60] },
+        { label: 'Desktop PC', emoji: '🖥️', vec: [-0.90, 0.90, 0.90] },
+        { label: 'Smartwatch', emoji: '⌚', vec: [0.95, -0.90, -0.60] },
+        { label: 'Laptop', emoji: '💻', vec: [0.30, 0.30, 0.50] },
+        { label: 'Game Console', emoji: '🎮', vec: [0.10, -0.30, 0.70] },
       ],
-      target: { label: 'Smartwatch', vec: [0.95, -0.9, -0.6] },
-      insight: 'Smartwatch pushes Portability even further than Smartphone, while trading away Screen Size and Processing Power.',
     },
   ];
 
-  // --- state ------------------------------------------------------------
+  function getVerdict(cos) {
+    if (cos >= 0.9) return { emoji: '🔥', text: 'Excellent guess!' };
+    if (cos >= 0.75) return { emoji: '👍', text: 'Good guess!' };
+    if (cos >= 0.5) return { emoji: '🤔', text: 'Decent — room to improve.' };
+    return { emoji: '😬', text: 'Pretty far off — try again!' };
+  }
+
+  // --- shared visual helpers -------------------------------------------------
+
+  function makeGlowTexture(rgb) {
+    var size = 128;
+    var c = document.createElement('canvas');
+    c.width = c.height = size;
+    var ctx = c.getContext('2d');
+    var grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    grad.addColorStop(0, 'rgba(' + rgb + ',0.9)');
+    grad.addColorStop(0.4, 'rgba(' + rgb + ',0.35)');
+    grad.addColorStop(1, 'rgba(' + rgb + ',0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+    return new THREE.CanvasTexture(c);
+  }
+
+  var emojiTextureCache = {};
+  function makeEmojiTexture(emoji) {
+    if (emojiTextureCache[emoji]) return emojiTextureCache[emoji];
+    var res = 256;
+    var c = document.createElement('canvas');
+    c.width = c.height = res;
+    var ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, res, res);
+    ctx.font = Math.round(res * 0.7) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, res / 2, res / 2 + res * 0.04);
+    var tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.anisotropy = 4;
+    tex.generateMipmaps = true;
+    emojiTextureCache[emoji] = tex;
+    return tex;
+  }
+
+  function makeEmojiSprite(emoji, size, opacity) {
+    var tex = makeEmojiTexture(emoji);
+    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opacity === undefined ? 1 : opacity, depthWrite: false });
+    var sprite = new THREE.Sprite(mat);
+    sprite.scale.set(size, size, size);
+    return sprite;
+  }
+
+  function makeOriginLine(targetPos, color, opacity) {
+    var geom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), targetPos]);
+    var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: opacity });
+    return new THREE.Line(geom, mat);
+  }
+
+  function makeGuessRing(size) {
+    var geom = new THREE.RingGeometry(size * 0.62, size * 0.68, 32);
+    var mat = new THREE.MeshBasicMaterial({ color: 0x00F3FF, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
+    return new THREE.Mesh(geom, mat);
+  }
+
+  function colorizeTubeAlongLength(geometry, colorA, colorB) {
+    var uv = geometry.attributes.uv;
+    var colors = new Float32Array(uv.count * 3);
+    var cA = new THREE.Color(colorA), cB = new THREE.Color(colorB), tmp = new THREE.Color();
+    for (var i = 0; i < uv.count; i++) {
+      tmp.copy(cA).lerp(cB, uv.getX(i));
+      colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  }
+
+  function buildAxesInto(scene, axisLen) {
+    var group = new THREE.Group();
+    var dirs = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+    dirs.forEach(function (dir) {
+      var pts = [dir.clone().multiplyScalar(-axisLen), dir.clone().multiplyScalar(axisLen)];
+      var geom = new THREE.BufferGeometry().setFromPoints(pts);
+      var mat = new THREE.LineBasicMaterial({ color: 0x3a4152, transparent: true, opacity: 0.55 });
+      group.add(new THREE.Line(geom, mat));
+    });
+    var grid = new THREE.GridHelper(axisLen * 2, 10, 0x232a3a, 0x181e2b);
+    grid.position.y = -axisLen;
+    group.add(grid);
+    scene.add(group);
+  }
+
+  // =========================================================================
+  // MAIN GAME SCENE
+  // =========================================================================
 
   var scene, camera, renderer, canvasContainer, canvasEl;
   var cameraRig = { theta: Math.PI / 4, phi: Math.PI / 2.6, radius: 8.5 };
@@ -714,17 +799,13 @@
   var meshRegistry = [];    // { mesh, group }
   var axisLabelEntries = [];
 
-  var playerSphere, playerGlow, playerLine, playerLabelEntry, cyanGlowTex, goldGlowTex;
-  var playerVec = [0, 0, 0];
+  var currentThemeIndex = 0;
+  var currentWordIndex = 0;
+  var guessVec = [0, 0, 0];
+  var wordSubmitted = false;
+  var currentGuessSprite = null, currentGuessRing = null, currentGuessLine = null;
 
-  var currentRoundIndex = 0;
-  var totalScore = 0;
-  var roundSubmitted = false;
-  var tutorialTimers = [];
-
-  // --- three.js setup -----------------------------------------------------
-
-  function initScene() {
+  function initMainScene() {
     canvasContainer = document.getElementById('canvasContainer');
     canvasEl = document.getElementById('glcanvas');
 
@@ -747,13 +828,9 @@
     goldLight.position.set(-3, -2, 4);
     scene.add(goldLight);
 
-    cyanGlowTex = makeGlowTexture('0,243,255');
-    goldGlowTex = makeGlowTexture('255,215,0');
-
-    buildAxes();
+    buildAxesInto(scene, AXIS_LEN);
     buildAxisLabels();
     buildParticles();
-    buildPlayerVisual();
 
     new ResizeObserver(resizeRenderer).observe(canvasContainer);
     canvasEl.addEventListener('pointerdown', onPointerDown);
@@ -761,7 +838,7 @@
     window.addEventListener('pointerup', onPointerUp);
     canvasEl.addEventListener('wheel', onWheel, { passive: false });
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animateMain);
   }
 
   function updateCameraPosition() {
@@ -802,30 +879,15 @@
     updateCameraPosition();
   }
 
-  function buildAxes() {
-    var group = new THREE.Group();
-    var dirs = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
-    dirs.forEach(function (dir) {
-      var pts = [dir.clone().multiplyScalar(-AXIS_LEN), dir.clone().multiplyScalar(AXIS_LEN)];
-      var geom = new THREE.BufferGeometry().setFromPoints(pts);
-      var mat = new THREE.LineBasicMaterial({ color: 0x3a4152, transparent: true, opacity: 0.55 });
-      group.add(new THREE.Line(geom, mat));
-    });
-    var grid = new THREE.GridHelper(AXIS_LEN * 2, 10, 0x232a3a, 0x181e2b);
-    grid.position.y = -AXIS_LEN;
-    group.add(grid);
-    scene.add(group);
-  }
-
-  function makeLabelEl(className) {
+  function makeLabelEl(className, layerEl) {
     var el = document.createElement('div');
     el.className = 'vlabel ' + className;
-    document.getElementById('labelLayer').appendChild(el);
+    layerEl.appendChild(el);
     return el;
   }
 
   function addLabel(getPos, text, group, className) {
-    var el = makeLabelEl(className);
+    var el = makeLabelEl(className, document.getElementById('labelLayer'));
     var entry = { getPos: getPos, text: text, el: el, group: group };
     labelRegistry.push(entry);
     return entry;
@@ -871,36 +933,6 @@
     scene.add(particles);
   }
 
-  function makeGlowTexture(rgb) {
-    var size = 128;
-    var c = document.createElement('canvas');
-    c.width = c.height = size;
-    var ctx = c.getContext('2d');
-    var grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-    grad.addColorStop(0, 'rgba(' + rgb + ',0.9)');
-    grad.addColorStop(0.4, 'rgba(' + rgb + ',0.35)');
-    grad.addColorStop(1, 'rgba(' + rgb + ',0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    return new THREE.CanvasTexture(c);
-  }
-
-  function makeSphere(vec, colorHex, opts) {
-    opts = opts || {};
-    var radius = opts.radius || 0.1;
-    var opacity = opts.opacity === undefined ? 1 : opts.opacity;
-    var emissiveIntensity = opts.emissiveIntensity === undefined ? 0.3 : opts.emissiveIntensity;
-    var geom = new THREE.SphereGeometry(radius, 24, 24);
-    var mat = new THREE.MeshStandardMaterial({
-      color: colorHex, emissive: colorHex, emissiveIntensity: emissiveIntensity,
-      roughness: 0.4, metalness: 0.1, transparent: opacity < 1, opacity: opacity,
-    });
-    var mesh = new THREE.Mesh(geom, mat);
-    var p = vecToWorld(vec);
-    mesh.position.copy(p);
-    return mesh;
-  }
-
   function addMesh(mesh, group) {
     scene.add(mesh);
     meshRegistry.push({ mesh: mesh, group: group });
@@ -921,40 +953,6 @@
     removeLabelsByGroup(group);
   }
 
-  function buildPlayerVisual() {
-    playerSphere = makeSphere([0, 0, 0], 0x00F3FF, { radius: 0.12, emissiveIntensity: 0.6 });
-    playerSphere.visible = false;
-    scene.add(playerSphere);
-
-    var spriteMat = new THREE.SpriteMaterial({ map: cyanGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    playerGlow = new THREE.Sprite(spriteMat);
-    playerGlow.scale.set(0.7, 0.7, 0.7);
-    playerGlow.visible = false;
-    scene.add(playerGlow);
-
-    var lineGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]);
-    var lineMat = new THREE.LineBasicMaterial({ color: 0x00F3FF, transparent: true, opacity: 0.65 });
-    playerLine = new THREE.Line(lineGeom, lineMat);
-    playerLine.visible = false;
-    scene.add(playerLine);
-
-    playerLabelEntry = addLabel(function () { return playerSphere.position; }, '', 'player', 'player-label');
-  }
-
-  function setPlayerVisible(visible) {
-    playerSphere.visible = visible;
-    playerGlow.visible = visible;
-    playerLine.visible = visible;
-    playerLabelEntry.text = visible ? 'You' : '';
-  }
-
-  function updatePlayerVisual() {
-    var tip = vecToWorld(playerVec);
-    playerSphere.position.copy(tip);
-    playerGlow.position.copy(tip);
-    playerLine.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), tip]);
-  }
-
   function updateLabels() {
     var rect = canvasContainer.getBoundingClientRect();
     var tmp = new THREE.Vector3();
@@ -973,216 +971,107 @@
     });
   }
 
-  function animate(now) {
-    requestAnimationFrame(animate);
+  function animateMain(now) {
+    requestAnimationFrame(animateMain);
     if (!isDragging) {
-      cameraRig.theta += 0.0022;
+      cameraRig.theta += 0.0016;
       updateCameraPosition();
     }
     if (particles) particles.rotation.y = now * 0.00002;
+    if (currentGuessRing) currentGuessRing.quaternion.copy(camera.quaternion);
     updateLabels();
     renderer.render(scene, camera);
-  }
-
-  // --- arc + drop animation ------------------------------------------------
-
-  function colorizeTubeAlongLength(geometry, colorA, colorB) {
-    var uv = geometry.attributes.uv;
-    var colors = new Float32Array(uv.count * 3);
-    var cA = new THREE.Color(colorA), cB = new THREE.Color(colorB), tmp = new THREE.Color();
-    for (var i = 0; i < uv.count; i++) {
-      tmp.copy(cA).lerp(cB, uv.getX(i));
-      colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
-    }
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   }
 
   function buildArc(fromVec3, toVec3) {
     var mid = fromVec3.clone().add(toVec3).multiplyScalar(0.5);
     mid.y += 0.9;
     var curve = new THREE.QuadraticBezierCurve3(fromVec3, mid, toVec3);
-    var geomCore = new THREE.TubeGeometry(curve, 40, 0.02, 8, false);
-    var geomHalo = new THREE.TubeGeometry(curve, 40, 0.055, 8, false);
+    var geomCore = new THREE.TubeGeometry(curve, 40, 0.018, 8, false);
+    var geomHalo = new THREE.TubeGeometry(curve, 40, 0.05, 8, false);
     colorizeTubeAlongLength(geomCore, 0x00F3FF, 0xFFD700);
     colorizeTubeAlongLength(geomHalo, 0x00F3FF, 0xFFD700);
-    var core = new THREE.Mesh(geomCore, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
-    var halo = new THREE.Mesh(geomHalo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false }));
-    addMesh(core, 'round');
-    addMesh(halo, 'round');
+    var core = new THREE.Mesh(geomCore, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    var halo = new THREE.Mesh(geomHalo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
+    addMesh(core, 'game');
+    addMesh(halo, 'game');
   }
 
-  function dropInWithBounce(mesh, targetPos, duration, onComplete) {
+  function dropInWithBounce(obj, targetPos, duration, onComplete) {
     var startPos = targetPos.clone().add(new THREE.Vector3(0, 2.4, 0));
-    mesh.position.copy(startPos);
-    mesh.scale.setScalar(0.001);
+    obj.position.copy(startPos);
+    obj.scale.setScalar(0.001);
+    var baseScale = obj.userData.baseScale || 1;
     var start = performance.now();
     function tick(now) {
       var t = Math.min(1, (now - start) / duration);
       var eased = Math.max(0, easeOutElastic(t));
-      mesh.position.lerpVectors(startPos, targetPos, eased);
-      mesh.scale.setScalar(eased);
+      obj.position.lerpVectors(startPos, targetPos, eased);
+      obj.scale.setScalar(eased * baseScale);
       if (t < 1) requestAnimationFrame(tick);
-      else { mesh.position.copy(targetPos); mesh.scale.setScalar(1); if (onComplete) onComplete(); }
+      else { obj.position.copy(targetPos); obj.scale.setScalar(baseScale); if (onComplete) onComplete(); }
     }
     requestAnimationFrame(tick);
   }
 
-  function animatePopIn(mesh, duration) {
-    var start = performance.now();
-    function tick(now) {
-      var t = Math.min(1, (now - start) / duration);
-      var e = Math.max(0, easeOutElastic(t));
-      mesh.scale.setScalar(e);
-      if (t < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+  // --- theme / word flow -----------------------------------------------------
+
+  function startTheme(themeIndex) {
+    removeGroup('game');
+    currentThemeIndex = themeIndex;
+    currentWordIndex = 0;
+    var theme = THEMES[currentThemeIndex];
+    setAxisLabelsText(theme.axes);
+    document.getElementById('themeName').textContent = theme.name;
+    document.getElementById('historyList').innerHTML = '';
+    document.getElementById('historyPanel').classList.add('hidden');
+    loadWord(0);
   }
 
-  // --- tutorial -------------------------------------------------------------
+  function loadWord(wordIndex) {
+    currentWordIndex = wordIndex;
+    wordSubmitted = false;
+    guessVec = [0, 0, 0];
+    var theme = THEMES[currentThemeIndex];
+    var word = theme.words[wordIndex % theme.words.length];
 
-  function setPhaseOverlayText(text) {
-    var el = document.getElementById('phaseOverlayText');
-    el.classList.remove('show');
-    setTimeout(function () {
-      el.textContent = text;
-      el.classList.add('show');
-    }, 120);
-    document.getElementById('tutorialCaption').textContent = text;
-  }
+    document.getElementById('targetEmoji').textContent = word.emoji;
+    document.getElementById('targetWord').textContent = word.label;
 
-  function addTutorialPoint(point) {
-    var mesh = makeSphere(point.vec, 0xE8EDF4, { radius: 0.1, opacity: 0.92, emissiveIntensity: 0.15 });
-    mesh.scale.setScalar(0.001);
-    addMesh(mesh, 'tutorial');
-    addLabel(function () { return mesh.position; }, point.label, 'tutorial', 'ref-label');
-    animatePopIn(mesh, 500);
-  }
+    var glowTex = makeGlowTexture('0,243,255');
+    var glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    var glow = new THREE.Sprite(glowMat);
+    glow.scale.set(0.9, 0.9, 0.9);
+    addMesh(glow, 'game');
 
-  function animateVectorMath() {
-    var king = TUTORIAL_POINTS[0].vec, man = TUTORIAL_POINTS[1].vec, woman = TUTORIAL_POINTS[2].vec;
-    var afterSub = [king[0] - man[0], king[1] - man[1], king[2] - man[2]];
+    currentGuessSprite = makeEmojiSprite(word.emoji, 0.55, 0.55);
+    addMesh(currentGuessSprite, 'game');
+    currentGuessRing = makeGuessRing(0.55);
+    addMesh(currentGuessRing, 'game');
+    currentGuessLine = makeOriginLine(new THREE.Vector3(0, 0, 0), 0x00F3FF, 0.35);
+    addMesh(currentGuessLine, 'game');
 
-    var marker = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00f3ff }));
-    marker.position.copy(vecToWorld(king));
-    addMesh(marker, 'tutorial');
-
-    var legs = [
-      { from: king, to: afterSub, duration: 1300 },
-      { from: afterSub, to: QUEEN_VEC, duration: 1300 },
-    ];
-    var legIndex = 0;
-
-    function runLeg() {
-      if (legIndex >= legs.length) {
-        var queenMesh = makeSphere(QUEEN_VEC, 0xFFD700, { radius: 0.12, emissiveIntensity: 0.55 });
-        queenMesh.scale.setScalar(0.001);
-        addMesh(queenMesh, 'tutorial');
-        addLabel(function () { return queenMesh.position; }, 'Queen', 'tutorial', 'vlabel-target');
-        animatePopIn(queenMesh, 650);
-        marker.visible = false;
-        return;
-      }
-      var leg = legs[legIndex];
-      var fromP = vecToWorld(leg.from), toP = vecToWorld(leg.to);
-      var trailGeom = new THREE.BufferGeometry().setFromPoints([fromP, toP]);
-      var trailMat = new THREE.LineBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.5 });
-      addMesh(new THREE.Line(trailGeom, trailMat), 'tutorial');
-
-      var start = performance.now();
-      function tick(now) {
-        var t = Math.min(1, (now - start) / leg.duration);
-        marker.position.lerpVectors(fromP, toP, easeInOutQuad(t));
-        if (t < 1) requestAnimationFrame(tick);
-        else { legIndex++; runLeg(); }
-      }
-      requestAnimationFrame(tick);
-    }
-    runLeg();
-  }
-
-  function clearTutorialTimers() { tutorialTimers.forEach(clearTimeout); tutorialTimers = []; }
-
-  function runTutorial() {
-    setAxisLabelsText(['Royalty', 'Gender', 'Power']);
-    setPhaseOverlayText('Vectors encode meaning as coordinates.');
-    addTutorialPoint(TUTORIAL_POINTS[0]);
-
-    animateProgressBar(15000);
-
-    tutorialTimers.push(setTimeout(function () {
-      addTutorialPoint(TUTORIAL_POINTS[1]);
-      addTutorialPoint(TUTORIAL_POINTS[2]);
-      setPhaseOverlayText('King, Man, and Woman all live in the same 3D space.');
-    }, 2200));
-
-    tutorialTimers.push(setTimeout(function () {
-      setPhaseOverlayText('King − Man + Woman ≈ Queen');
-      animateVectorMath();
-    }, 5500));
-
-    tutorialTimers.push(setTimeout(function () {
-      setPhaseOverlayText('King and Queen cluster high on Royalty — Man and Woman split along Gender.');
-    }, 11500));
-
-    tutorialTimers.push(setTimeout(startGameplay, 15000));
-  }
-
-  function animateProgressBar(duration) {
-    var fill = document.getElementById('tutorialProgressFill');
-    var start = performance.now();
-    function tick(now) {
-      var t = Math.min(1, (now - start) / duration);
-      fill.style.width = (t * 100) + '%';
-      if (t < 1 && document.getElementById('tutorialPanel').offsetParent !== null) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  function startGameplay() {
-    clearTutorialTimers();
-    removeGroup('tutorial');
-    document.getElementById('tutorialPanel').classList.add('hidden');
-    document.getElementById('phaseOverlay').classList.add('hidden');
-    document.getElementById('tutorialProgressTrack').classList.add('hidden');
-    document.getElementById('gamePanel').classList.remove('hidden');
-    document.getElementById('finalPanel').classList.add('hidden');
-    setPlayerVisible(true);
-    currentRoundIndex = 0;
-    setupRound(0);
-  }
-
-  // --- gameplay rounds -------------------------------------------------------
-
-  function clearRoundObjects() { removeGroup('round'); }
-
-  function setupRound(index) {
-    clearRoundObjects();
-    roundSubmitted = false;
-    playerVec = [0, 0, 0];
+    var currentGlow = glow;
+    updatePlayerVisual = function () {
+      var tip = vecToWorld(guessVec, SCALE);
+      currentGuessSprite.position.copy(tip);
+      currentGuessRing.position.copy(tip);
+      currentGlow.position.copy(tip);
+      currentGuessLine.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), tip]);
+    };
     updatePlayerVisual();
 
-    var round = ROUNDS[index];
-    setAxisLabelsText(round.axes);
-
-    round.references.forEach(function (ref) {
-      var mesh = makeSphere(ref.vec, 0xE8EDF4, { radius: 0.1, opacity: 0.92, emissiveIntensity: 0.15 });
-      addMesh(mesh, 'round');
-      addLabel(function () { return mesh.position; }, ref.label, 'round', 'ref-label');
-    });
-
-    renderControlPanelForRound(round, index);
+    renderControlPanelForWord(theme, word, wordIndex);
     document.getElementById('revealPanel').classList.add('hidden');
     enableSliders();
   }
 
-  function renderControlPanelForRound(round, index) {
-    document.getElementById('roundNum').textContent = index + 1;
-    document.getElementById('roundName').textContent = round.name;
-    document.getElementById('targetWord').textContent = round.target.label;
+  var updatePlayerVisual = function () {};
 
+  function renderControlPanelForWord(theme, word, wordIndex) {
     var container = document.getElementById('slidersContainer');
     container.innerHTML = '';
-    round.axes.forEach(function (axisName, i) {
+    theme.axes.forEach(function (axisName, i) {
       var row = document.createElement('div');
       row.className = 'slider-row';
       row.innerHTML =
@@ -1190,20 +1079,29 @@
         '<input type="range" min="-1" max="1" step="0.01" value="0" class="vslider" id="slider' + i + '" />';
       container.appendChild(row);
     });
-    round.axes.forEach(function (_, i) {
+    theme.axes.forEach(function (_, i) {
       document.getElementById('slider' + i).addEventListener('input', function (e) {
-        playerVec[i] = parseFloat(e.target.value);
-        document.getElementById('sliderVal' + i).textContent = playerVec[i].toFixed(2);
+        guessVec[i] = parseFloat(e.target.value);
+        document.getElementById('sliderVal' + i).textContent = guessVec[i].toFixed(2);
         updatePlayerVisual();
-        updateLiveMeter();
+        updateLiveMeter(theme, word);
+        updateLiveVectorCode();
       });
     });
-    updateLiveMeter();
+    updateLiveMeter(theme, word);
+    updateLiveVectorCode();
   }
 
-  function updateLiveMeter() {
-    var round = ROUNDS[currentRoundIndex];
-    var cos = cosineSimilarity(playerVec, round.target.vec);
+  function updateLiveVectorCode() {
+    var text = '[ ' + guessVec.map(function (v) {
+      var s = v.toFixed(2);
+      return (v >= 0 ? ' ' : '') + s;
+    }).join(', ') + ' ]';
+    document.getElementById('liveVectorCode').textContent = text;
+  }
+
+  function updateLiveMeter(theme, word) {
+    var cos = cosineSimilarity(guessVec, word.vec);
     var pct = Math.round(Math.max(0, cos) * 100);
     document.getElementById('liveMeterFill').style.width = pct + '%';
     document.getElementById('liveMeterFill').style.background = lerpColor('#c23b2b', '#1f7a4d', pct / 100);
@@ -1219,101 +1117,271 @@
     document.querySelectorAll('.vslider').forEach(function (s) { s.disabled = true; });
   }
 
-  function updateScoreChip() { document.getElementById('scoreValue').textContent = totalScore; }
-
   function handleSubmit() {
-    if (roundSubmitted) return;
-    roundSubmitted = true;
+    if (wordSubmitted) return;
+    wordSubmitted = true;
     disableSliders();
 
-    var round = ROUNDS[currentRoundIndex];
-    var cos = cosineSimilarity(playerVec, round.target.vec);
+    var theme = THEMES[currentThemeIndex];
+    var word = theme.words[currentWordIndex % theme.words.length];
+    var cos = cosineSimilarity(guessVec, word.vec);
     var score = Math.round(Math.max(0, cos) * 100);
-    totalScore += score;
-    updateScoreChip();
 
-    var playerTip = playerSphere.position.clone();
-    var targetPos = vecToWorld(round.target.vec);
+    var guessTip = currentGuessSprite.position.clone();
+    var truePos = vecToWorld(word.vec, SCALE);
 
-    var goldMesh = makeSphere(round.target.vec, 0xFFD700, { radius: 0.13, emissiveIntensity: 0.55 });
-    addMesh(goldMesh, 'round');
-    addLabel(function () { return goldMesh.position; }, round.target.label, 'round', 'vlabel-target');
+    var trueGlowTex = makeGlowTexture('255,215,0');
+    var trueGlowMat = new THREE.SpriteMaterial({ map: trueGlowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    var trueGlow = new THREE.Sprite(trueGlowMat);
+    trueGlow.scale.set(1.0, 1.0, 1.0);
+    trueGlow.position.copy(truePos);
+    addMesh(trueGlow, 'game');
 
-    dropInWithBounce(goldMesh, targetPos, 900, function () {
-      buildArc(playerTip, targetPos);
+    var trueSprite = makeEmojiSprite(word.emoji, 0.6, 1);
+    trueSprite.userData.baseScale = 0.6;
+    addMesh(trueSprite, 'game');
+    addLabel(function () { return trueSprite.position; }, word.label, 'game', 'vlabel-target');
+    addMesh(makeOriginLine(truePos, 0xFFD700, 0.45), 'game');
+
+    dropInWithBounce(trueSprite, truePos, 900, function () {
+      buildArc(guessTip, truePos);
     });
 
-    buildRevealContent(round, score, cos);
+    buildRevealContent(word, score, cos);
+    pushHistory(word, score);
   }
 
-  function buildRevealContent(round, score, cos) {
-    var angDeg = (Math.acos(clamp(cos, -1, 1)) * 180 / Math.PI).toFixed(1);
-    document.getElementById('revealScore').textContent = score;
-    document.getElementById('revealAngle').textContent = angDeg + '°';
-    document.getElementById('revealYourVec').textContent = fmtVec(playerVec);
-    document.getElementById('revealTrueVec').textContent = fmtVec(round.target.vec);
-
-    var distHtml = round.references.map(function (ref) {
-      var d = euclidean(playerVec, ref.vec).toFixed(2);
-      return '<div class="dist-row"><span>' + ref.label + '</span><span>' + d + '</span></div>';
-    }).join('');
-    document.getElementById('revealDistances').innerHTML = distHtml;
-    document.getElementById('revealInsight').textContent = round.insight;
-
-    var isLast = currentRoundIndex === ROUNDS.length - 1;
-    document.getElementById('nextRoundBtn').textContent = isLast ? 'See Results' : 'Next Round';
+  function buildRevealContent(word, score, cos) {
+    var verdict = getVerdict(cos);
+    document.getElementById('verdictEmoji').textContent = verdict.emoji;
+    document.getElementById('verdictText').textContent = verdict.text;
+    document.getElementById('revealScore').textContent = score + '%';
+    document.getElementById('revealYourVec').textContent = fmtVec(guessVec);
+    document.getElementById('revealTrueVec').textContent = fmtVec(word.vec);
     document.getElementById('submitBtn').classList.add('hidden');
     document.getElementById('revealPanel').classList.remove('hidden');
   }
 
-  function handleNextRound() {
-    currentRoundIndex++;
-    if (currentRoundIndex >= ROUNDS.length) {
-      showFinalScreen();
-    } else {
-      setupRound(currentRoundIndex);
+  function pushHistory(word, score) {
+    var panel = document.getElementById('historyPanel');
+    panel.classList.remove('hidden');
+    var list = document.getElementById('historyList');
+    var item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = '<span class="hi-word">' + word.emoji + ' ' + word.label + '</span><span class="hi-score">' + score + '%</span>';
+    list.appendChild(item);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function handleNextWord() {
+    var theme = THEMES[currentThemeIndex];
+    var nextIndex = (currentWordIndex + 1) % theme.words.length;
+    loadWord(nextIndex);
+  }
+
+  function handleReset() {
+    var nextTheme = (currentThemeIndex + 1) % THEMES.length;
+    startTheme(nextTheme);
+  }
+
+  // =========================================================================
+  // MINI DEMO SCENE (King / Queen / Prince / Princess)
+  // =========================================================================
+
+  var demoScene, demoCamera, demoRenderer, demoContainer, demoCanvasEl;
+  var demoCameraTheta = 0.6;
+  var demoMeshes = [];
+  var demoLabels = [];
+  var demoTimers = [];
+  var demoPlaybackToken = 0;
+  var demoRunning = false;
+
+  function initDemoScene() {
+    demoContainer = document.getElementById('demoCanvasWrap');
+    demoCanvasEl = document.getElementById('demoCanvas');
+
+    demoScene = new THREE.Scene();
+    demoScene.background = new THREE.Color(0x0B0E14);
+
+    demoCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
+
+    demoRenderer = new THREE.WebGLRenderer({ canvas: demoCanvasEl, antialias: true });
+    demoRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    resizeDemoRenderer();
+
+    demoScene.add(new THREE.AmbientLight(0x8899aa, 0.8));
+    var pl = new THREE.PointLight(0x00f3ff, 1.0, 20);
+    pl.position.set(2, 2, 2);
+    demoScene.add(pl);
+
+    buildAxesInto(demoScene, DEMO_AXIS_LEN);
+    buildDemoAxisLabels();
+
+    new ResizeObserver(resizeDemoRenderer).observe(demoContainer);
+    requestAnimationFrame(animateDemo);
+  }
+
+  function resizeDemoRenderer() {
+    var w = demoContainer.clientWidth, h = demoContainer.clientHeight;
+    if (!w || !h) return;
+    demoCamera.aspect = w / h;
+    demoCamera.updateProjectionMatrix();
+    demoRenderer.setSize(w, h, false);
+  }
+
+  function updateDemoCameraPosition() {
+    var radius = 6.2, phi = 1.15;
+    demoCamera.position.set(
+      radius * Math.sin(phi) * Math.cos(demoCameraTheta),
+      radius * Math.cos(phi),
+      radius * Math.sin(phi) * Math.sin(demoCameraTheta)
+    );
+    demoCamera.lookAt(0, 0, 0);
+  }
+
+  function makeDemoLabelEl(className) {
+    return makeLabelEl(className, document.getElementById('demoLabelLayer'));
+  }
+
+  function buildDemoAxisLabels() {
+    var ends = [
+      new THREE.Vector3(DEMO_AXIS_LEN, 0, 0),
+      new THREE.Vector3(0, DEMO_AXIS_LEN, 0),
+      new THREE.Vector3(0, 0, DEMO_AXIS_LEN),
+    ];
+    ends.forEach(function (pos, i) {
+      var el = makeDemoLabelEl('demo-axis-label');
+      el.textContent = DEMO_AXES[i];
+      demoLabels.push({ getPos: function () { return pos; }, el: el, isAxis: true });
+    });
+  }
+
+  function clearDemoWordVisuals() {
+    demoMeshes.forEach(function (mesh) {
+      demoScene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) mesh.material.dispose();
+    });
+    demoMeshes = [];
+    demoLabels = demoLabels.filter(function (entry) {
+      if (entry.isAxis) return true;
+      entry.el.remove();
+      return false;
+    });
+  }
+
+  function updateDemoLabels() {
+    var rect = demoContainer.getBoundingClientRect();
+    var tmp = new THREE.Vector3();
+    demoLabels.forEach(function (entry) {
+      tmp.copy(entry.getPos());
+      tmp.project(demoCamera);
+      var visible = tmp.z < 1;
+      entry.el.style.display = visible ? 'block' : 'none';
+      if (visible) {
+        entry.el.style.left = ((tmp.x * 0.5 + 0.5) * rect.width) + 'px';
+        entry.el.style.top = ((-tmp.y * 0.5 + 0.5) * rect.height) + 'px';
+      }
+    });
+  }
+
+  function animateDemo(now) {
+    requestAnimationFrame(animateDemo);
+    if (demoRunning) {
+      demoCameraTheta += 0.0028;
+      updateDemoCameraPosition();
+      updateDemoLabels();
+      demoRenderer.render(demoScene, demoCamera);
     }
   }
 
-  function getRank(score) {
-    if (score >= 250) return 'Vector Master';
-    if (score >= 180) return 'Latent Explorer';
-    if (score >= 100) return 'Pattern Seeker';
-    return 'Noise Generator';
+  function addDemoWordPoint(word) {
+    var pos = vecToWorld(word.vec, DEMO_SCALE);
+    var sprite = makeEmojiSprite(word.emoji, 0.5, 0);
+    sprite.position.copy(pos);
+    demoScene.add(sprite);
+    demoMeshes.push(sprite);
+
+    var line = makeOriginLine(pos, 0x00F3FF, 0);
+    demoScene.add(line);
+    demoMeshes.push(line);
+
+    var labelEl = makeDemoLabelEl('demo-word-label');
+    labelEl.textContent = word.label;
+    labelEl.style.opacity = '0';
+    demoLabels.push({ getPos: function () { return sprite.position; }, el: labelEl, isAxis: false });
+
+    var start = performance.now();
+    var duration = 550;
+    function tick(nowT) {
+      var t = Math.min(1, (nowT - start) / duration);
+      var eased = Math.max(0, easeOutElastic(t));
+      sprite.material.opacity = Math.min(1, eased);
+      sprite.scale.setScalar(0.5 * Math.min(1.15, Math.max(0.001, eased)));
+      line.material.opacity = Math.min(0.45, eased * 0.45);
+      labelEl.style.opacity = String(Math.min(1, eased));
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   }
 
-  function showFinalScreen() {
-    clearRoundObjects();
-    setPlayerVisible(false);
-    document.getElementById('gamePanel').classList.add('hidden');
-    var finalPanel = document.getElementById('finalPanel');
-    finalPanel.classList.remove('hidden');
-    document.getElementById('finalScore').textContent = totalScore;
-    document.getElementById('finalRank').textContent = getRank(totalScore);
+  function typeCodeLine(lineEl, word, timerBag, token) {
+    return new Promise(function (resolve) {
+      lineEl.textContent = word.varName + (word.varName.length < 8 ? ' '.repeat(8 - word.varName.length) : '') + ' = [';
+      var i = 0;
+      function next() {
+        if (token !== demoPlaybackToken) { resolve(); return; }
+        if (i >= word.vec.length) { lineEl.textContent += ' ]'; resolve(); return; }
+        var val = word.vec[i].toFixed(2);
+        lineEl.textContent += (i > 0 ? ', ' : '') + (word.vec[i] >= 0 ? ' ' : '') + val;
+        i++;
+        timerBag.push(setTimeout(next, 300));
+      }
+      next();
+    });
   }
 
-  function playAgain() {
-    totalScore = 0;
-    currentRoundIndex = 0;
-    updateScoreChip();
-    document.getElementById('finalPanel').classList.add('hidden');
-    document.getElementById('gamePanel').classList.remove('hidden');
-    setPlayerVisible(true);
-    setupRound(0);
+  async function playDemo() {
+    var token = ++demoPlaybackToken;
+    demoTimers.forEach(clearTimeout);
+    demoTimers = [];
+    clearDemoWordVisuals();
+    document.getElementById('demoCode').innerHTML = '';
+    demoRunning = true;
+
+    for (var i = 0; i < DEMO_WORDS.length; i++) {
+      if (token !== demoPlaybackToken) return;
+      var word = DEMO_WORDS[i];
+      var lineEl = document.createElement('div');
+      lineEl.className = 'code-line';
+      document.getElementById('demoCode').appendChild(lineEl);
+
+      await typeCodeLine(lineEl, word, demoTimers, token);
+      if (token !== demoPlaybackToken) return;
+      addDemoWordPoint(word);
+      await sleep(1500, demoTimers);
+    }
+
+    if (token !== demoPlaybackToken) return;
+    await sleep(1800, demoTimers);
+    if (token !== demoPlaybackToken) return;
+    minimizeDemo();
   }
 
-  function replayTutorial() {
-    totalScore = 0;
-    updateScoreChip();
-    clearRoundObjects();
-    setPlayerVisible(false);
-    document.getElementById('finalPanel').classList.add('hidden');
-    document.getElementById('gamePanel').classList.add('hidden');
-    document.getElementById('tutorialPanel').classList.remove('hidden');
-    document.getElementById('phaseOverlay').classList.remove('hidden');
-    document.getElementById('tutorialProgressTrack').classList.remove('hidden');
-    document.getElementById('tutorialProgressFill').style.width = '0%';
-    runTutorial();
+  function minimizeDemo() {
+    demoPlaybackToken++;
+    demoTimers.forEach(clearTimeout);
+    demoTimers = [];
+    demoRunning = false;
+    document.getElementById('demoWindow').classList.add('hidden');
+    document.getElementById('demoPill').style.display = 'flex';
+  }
+
+  function expandDemo() {
+    document.getElementById('demoWindow').classList.remove('hidden');
+    document.getElementById('demoPill').style.display = 'none';
+    demoRunning = true;
+    playDemo();
   }
 
   // --- export modal -----------------------------------------------------
@@ -1344,18 +1412,21 @@
   // --- bootstrap -----------------------------------------------------------
 
   function wireStaticButtons() {
-    document.getElementById('skipTutorialBtn').addEventListener('click', startGameplay);
     document.getElementById('submitBtn').addEventListener('click', handleSubmit);
-    document.getElementById('nextRoundBtn').addEventListener('click', handleNextRound);
-    document.getElementById('playAgainBtn').addEventListener('click', playAgain);
-    document.getElementById('replayTutorialBtn').addEventListener('click', replayTutorial);
+    document.getElementById('nextWordBtn').addEventListener('click', handleNextWord);
+    document.getElementById('resetBtn').addEventListener('click', handleReset);
+    document.getElementById('demoCloseBtn').addEventListener('click', minimizeDemo);
+    document.getElementById('demoPill').addEventListener('click', expandDemo);
     wireExportModal();
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    initScene();
+    initMainScene();
+    startTheme(0);
+    initDemoScene();
     wireStaticButtons();
-    runTutorial();
+    demoRunning = true;
+    playDemo();
   });
 })();
 </script>

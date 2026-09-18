@@ -20,6 +20,7 @@ body {
 }
 
 .hero-heading {
+  color: #1b1b18;
   background: linear-gradient(180deg, #1b1b18 0%, #12483d 100%);
   -webkit-background-clip: text;
   background-clip: text;

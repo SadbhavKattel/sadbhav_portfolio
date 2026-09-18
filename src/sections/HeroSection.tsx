@@ -55,13 +55,8 @@ export default function HeroSection() {
 
       <div className="flex-1" />
 
-      <FadeIn
-        delay={0.4}
-        className="relative z-10 flex w-full items-center justify-center px-6 pb-12 pt-6"
-      >
-        <div className="w-full max-w-4xl sm:max-w-6xl">
-          <VectorSpaceRunner />
-        </div>
+      <FadeIn delay={0.4} className="relative z-10 w-full pt-6">
+        <VectorSpaceRunner />
       </FadeIn>
     </section>
   );
